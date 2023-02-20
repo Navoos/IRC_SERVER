@@ -8,4 +8,3 @@ This is an IRC (Internet Relay Chat) server implemented in C++. It allows multip
 * Supports basic chat commands such as JOIN, PART, PRIVMSG, etc
 * Maintains a list of connected users and channels
 * Supports authentication and registration of users with passwords
-* Can be configured with a configuration file to set server settings and defaults
