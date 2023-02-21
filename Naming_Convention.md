@@ -5,3 +5,5 @@
 *   The private attributes must be prefixed __
 *   The protected attributes must be prefixe _
 *   functions and variables must be in snake case
+*   the open bracket of a function must be in the same line of the declaration
+*   attributes of class must be prefixed with this->
