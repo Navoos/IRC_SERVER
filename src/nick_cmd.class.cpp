@@ -1,4 +1,4 @@
-#include "nick_cmd.class.cpp"
+#include "nick_cmd.class.hpp"
 
 Nick::Nick(Client *client): __client(client){}
 

@@ -1,5 +1,4 @@
-
-#include "user_cmd.class.cpp"
+#include "user_cmd.class.hpp"
 
 User::User(Client *client): __client(client){}
 
