@@ -1,7 +1,7 @@
 #ifndef SOCKET_CLASS_HPP
 # define SOCKET_CLASS_HPP
 
-#include <string>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
