@@ -19,13 +19,13 @@ public:
 
 class Join : public Command {
 public:
-    Join(Client* client, Channel* channel) : client(client), channel(channel) {}
+    Join(Client* client, Channel* channel) : __client(client), __channel(channel) {}
     virtual void execute(Mediator* mediator) {
-        mediator->join(client, channel);
+        mediator->join(__client, __channel);
     }
 private:
-    Client* client;
-    Channel* channel;
+    Client* __client;
+    Channel* __channel;
 };
 
 class Part : public Command {
