@@ -1,10 +1,11 @@
 NAME = bin/ircserv
 CC = g++
-CFLAGS = -Wall -Wextra -Iinclude
+CFLAGS = -Wall -Wextra -Iinclude -std=c++98
 LFLAGS = 
-SRC = main.cpp socket.class.cpp
+SRC = main.cpp socket.class.cpp server.class.cpp
 SRCS = $(addprefix src/, $(SRC))
-INCLUDE = $(addprefix include/, socket.class.hpp)
+INC = socket.class.hpp server.class.hpp mediator.class.hpp command.interface.hpp
+INCLUDE = $(addprefix include/, $(INC))
 OBJS = $(addprefix obj/, $(SRC:.cpp=.o))
 ifeq ($(MAKECMDGOALS), debug)
 	CFLAGS += -g3 -fsanitize=address,integer,undefined
