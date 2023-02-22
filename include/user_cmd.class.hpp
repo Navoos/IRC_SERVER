@@ -1,5 +1,5 @@
-#ifndef PASS_CMD_CLASS_HPP
-# define PASS_CMD_CLASS_HPP
+#ifndef USER_CMD_CLASS_HPP
+# define USER_CMD_CLASS_HPP
 
 #include "client.class.hpp"
 #include "command.interface.hpp"
