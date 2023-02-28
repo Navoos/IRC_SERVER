@@ -64,7 +64,7 @@ void Server::run() {
 			if (this->__clients.find(this->__fds[i].fd) != this->__clients.end()) {
 				this->__clients.at(this->__fds[i].fd).update_client(s_buffer);
 			} else {
-				std::cerr << "Adding new client ..." << std::endl;
+				// std::cerr << "Adding new client ..." << std::endl;
 				Client client(this->__fds[i].fd);
 				this->__clients.insert(std::make_pair(this->__fds[i].fd, client));
 				this->__clients.at(this->__fds[i].fd).update_client(s_buffer);
