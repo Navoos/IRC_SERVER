@@ -7,17 +7,16 @@ class Mediator;
 
 class Client {
   public:
-    /* EXAMPLE:
-     * void join(Channel* channel) {
-        Command* command = new Join(this, channel);
-        command->execute(mediator);
-        delete command;
-    }*/
-    // HOUSSAM add additional commands here
+    bool    is_connected();
+    void    put_message(std::string name, std::string message);
   private:
     const std::string   __buffer;
+    std::string         cmd;
+    std::vector<std::string> args;
     std::vector<Channels*> channels;
     Mediator *__mediator;
     friend class Mediator;
+
+    bool    __connecte;
 };
 #endif
