@@ -1,4 +1,6 @@
 #include "main.hpp"
+#include <iostream>
+#include <string>
 
 int main() {
   Socket socket("4040");

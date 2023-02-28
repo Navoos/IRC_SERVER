@@ -2,22 +2,28 @@
 # define CLIENT_CLASS_HPP
 #include <vector>
 #include <string>
+#include "channel.class.hpp"
 
 class Mediator;
 
 class Client {
-  public:
-    /* EXAMPLE:
-     * void join(Channel* channel) {
-        Command* command = new Join(this, channel);
-        command->execute(mediator);
-        delete command;
-    }*/
-    // HOUSSAM add additional commands here
-  private:
-    const std::string   __buffer;
-    std::vector<Channels*> channels;
-    Mediator *__mediator;
-    friend class Mediator;
+	private:
+		std::vector<std::string> __cmd;
+		std::string   __buffer;
+		int           __fd;
+		// std::vector<Channels*> channels;
+		Mediator *__mediator;
+		friend class Mediator;
+	public:
+	Client(int fd);
+    void    update_client(std::string &str);
+
+	/* EXAMPLE:
+	 * void join(Channel* channel) {
+		Command* command = new Join(this, channel);
+		command->execute(mediator);
+		delete command;
+	}*/
+	// HOUSSAM add additional commands here
 };
 #endif
