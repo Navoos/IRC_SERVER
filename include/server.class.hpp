@@ -19,10 +19,15 @@ class Server {
 	std::vector<pollfd> __fds;
 	int                 __socket;
 	std::map<int, Client> __clients;
+    std::string					__password;
   private:
 	Server(int &socket);
   public:
 	void    run();
 	static Server& get_instance(int socket);
+    std::string	   get_password(void) const;
+    std::map<int, Client>& get_clients(void) {
+        return this->__clients;
+    }
 };
 #endif

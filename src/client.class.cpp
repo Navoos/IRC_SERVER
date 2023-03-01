@@ -1,18 +1,27 @@
 #include "client.class.hpp"
-
-// bool		Client::isConnected(void) { 
-//     return __connecte; }
-
-// void Client::put_message(std::string name, std::string message)
-// {
-//     std::stringstream msg;
-
-//     msg  << ":IRC_SERVER " << name << " " << message;
-
-//     std::cout << msg.str() << std::endl;
-// }
 #include <cstddef>
 #include <iostream>
+
+bool		Client::is_connected(void) { 
+    return __connected; }
+
+bool		Client::is_accepted(void) { 
+    return __accepted; }
+
+void		Client::set_accepted(bool accepted) { 
+    __accepted = accepted; }
+
+void		Client::set_connected(bool connected) { 
+    __connected = connected; }
+
+void		Client::set_nickname(std::string nickname) { 
+    __nick = nickname; }
+
+void		Client::set_username(std::string username) { 
+    __user = username; }
+
+std::string	Client::get_nickname(void) const { return __nick; }
+std::string	Client::get_username(void) const { return __user; }
 Client::Client(int fd) : __fd(fd) {
 
 }
@@ -42,4 +51,18 @@ void    Client::update_client(std::string &str) {
         this->__buffer.erase(0, pos + 1);
         pos = this->__buffer.find("\n");
     }
+}
+
+void Client::put_message(std::string name, std::string message)
+{
+    std::cout <<":IRC_SERVER " << name << " " << get_nickname <<" " <<message << std::endl;
+}
+
+
+bool    Client::check_connection(void){
+    if (is_connected() || !is_accepted() || get_nickname().empty() || get_username().empty())
+        return false;
+    set_connected(true);
+    std::cout << "welcome to servre";
+    return true;
 }

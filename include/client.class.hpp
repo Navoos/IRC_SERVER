@@ -7,11 +7,6 @@
 class Mediator;
 
 class Client {
-  public:
-    bool    is_connected();
-    void    put_message(std::string name, std::string message);
-    Client(int fd);
-    void    update_client(std::string &str);
   private:
     std::vector<std::string> __cmd;
 	std::string   __buffer;
@@ -19,15 +14,25 @@ class Client {
     Mediator *__mediator;
     friend class Mediator;
 
-    bool    __connecte;
+    bool    __connected;
+    bool    __accepted;
 
+	std::string				__nick;
+	std::string				__user;
+  
+  public:
+    bool    is_connected();
+    bool    is_accepted();
+    void    put_message(std::string name, std::string message);
+    Client(int fd);
+    void    update_client(std::string &str);
+    void    set_accepted(bool acc);
+    bool    set_connected(bool connected);
+    void	set_nickname(std::string nick);
+	void	set_username(std::string user);
+    std::string	    get_nickname(void) const ;
+	std::string	    get_username(void) const ;
+    bool    check_connection(void);
 
-	/* EXAMPLE:
-	 * void join(Channel* channel) {
-		Command* command = new Join(this, channel);
-		command->execute(mediator);
-		delete command;
-	}*/
-	// HOUSSAM add additional commands here
 };
 #endif

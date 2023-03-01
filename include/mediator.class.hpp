@@ -4,12 +4,13 @@
 
 class Client;
 class Channel;
+class Server;
 
 class Mediator {
   public:
       void  register_client(Client *client);
       void  register_channel(Channel *channel);
-      void  pass_cmd(Client *client);   // houssam
+      void  pass_cmd(Client *client, Server *servre);   // houssam
       void  user_cmd(Client *client);   // houssam
       void  nick_cmd(Client *client);   // houssam
       void  join_cmd(Client *client, Channel *channel);   //houssam
@@ -23,6 +24,7 @@ class Mediator {
   private:
       std::vector<Client*> __clients;
       std::vector<Channel*> __channels;
+      Server *__server;
 };
 
 #endif

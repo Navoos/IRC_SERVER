@@ -75,3 +75,7 @@ void Server::run() {
 	}
   }
 }
+
+
+std::string Server::get_password(void) const
+{ return __password; }
