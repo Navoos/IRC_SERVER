@@ -8,17 +8,14 @@
 #define ERR_NONICKNAMEGIVEN    "431"
 #define ERR_ERRONEUSNICKNAME   "432"
 #define ERR_NICKNAMEINUSE   "433"
-
-class Client;
 class Channel;
+class Client;
 class Server;
 
 class Mediator {
   public:
-      void  register_client(Client *client);
-      void  register_channel(Channel *channel);
-      Server* get_server();
-      void  pass_cmd(Client *client, Server *servre);   // houssam
+      Server get_server();
+      void  pass_cmd(Client *client, Server server);   // houssam
       void  user_cmd(Client *client);   // houssam
       void  nick_cmd(Client *client);   // houssam
       void  join_cmd(Client *client, Channel *channel);   //houssam
@@ -29,10 +26,11 @@ class Mediator {
       // todo: add invit command
       // todo: add topic command
       // HOUSSAM: add additional commands here
+      Mediator(Server& server);
+      Mediator();
   private:
-      std::vector<Client*> __clients;
+      std::vector<Client*>  __clients;
       std::vector<Channel*> __channels;
-      Server *__server;
+      Server    *__server;
 };
-
 #endif

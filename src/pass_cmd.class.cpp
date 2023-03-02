@@ -1,4 +1,5 @@
 #include "pass_cmd.class.hpp"
+#include "mediator.class.hpp"
 
 Pass::Pass(Client *client, Server *server): __client(client), __server(server){}
 

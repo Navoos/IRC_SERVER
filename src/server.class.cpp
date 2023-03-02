@@ -1,8 +1,10 @@
 #include "server.class.hpp"
+#include "client.class.hpp"
+#include "socket.class.hpp"
 #include <iostream>
 #include <map>
 
-Server::Server(int &socket) : __socket(socket) {
+Server::Server(int &socket, std::string &password) : __socket(socket), __password(password) {
   fcntl(this->__socket, F_SETFL, O_NONBLOCK);
   if (listen(this->__socket, BACKLOG) == -1)
 	exit(EXIT_FAILURE);
@@ -11,8 +13,10 @@ Server::Server(int &socket) : __socket(socket) {
   this->__fds[0].events = POLLIN;
 }
 
-Server&  Server::get_instance(int socket) {
-  static Server instance(socket);
+Server::Server() {}
+
+Server&  Server::get_instance(int socket, std::string &password) {
+  static Server instance(socket, password);
   return instance;
 }
 
@@ -65,7 +69,7 @@ void Server::run() {
 				this->__clients.at(this->__fds[i].fd).update_client(s_buffer);
 			} else {
 				// std::cerr << "Adding new client ..." << std::endl;
-				Client client(this->__fds[i].fd);
+				Client *client = new Client(this->__fds[i].fd, this->__password);
 				this->__clients.insert(std::make_pair(this->__fds[i].fd, client));
 				this->__clients.at(this->__fds[i].fd).update_client(s_buffer);
 			}

@@ -1,4 +1,6 @@
 #include "client.class.hpp"
+#include "server.class.hpp"
+#include "mediator.class.hpp"
 #include <cstddef>
 #include <iostream>
 
@@ -22,8 +24,7 @@ void		Client::set_username(std::string username) {
 
 std::string	Client::get_nickname(void) const { return __nick; }
 std::string	Client::get_username(void) const { return __user; }
-Client::Client(int fd) : __fd(fd) {
-
+Client::Client(int fd, std::string &server_password) : __server_password(server_password), __fd(fd) {
 }
 
 void    Client::update_client(std::string &str) {
@@ -46,6 +47,7 @@ void    Client::update_client(std::string &str) {
         }
         if (!this->__cmd.empty()) {
             // HOUSSAM : execute the command here
+            this->execute(this->__mediator);
             this->__cmd.clear();
         }
         this->__buffer.erase(0, pos + 1);
@@ -67,7 +69,12 @@ bool    Client::check_connection(void){
     return true;
 }
 
-void    Client::execute(Mediator *mediator){
-    if (__cmd[1] == "PASS")
-        mediator->pass_cmd(this, mediator->get_server());
+void    Client::execute(Mediator mediator){
+    if (__cmd[0] == "PASS" || __cmd[0] == "pass")
+        mediator.pass_cmd(this, mediator.get_server());
+    if (__cmd[0] == "USER" || __cmd[0] == "user")
+        mediator.user_cmd(this);
+    if (__cmd[0] == "NICK" || __cmd[0] == "nick")
+        mediator.nick_cmd(this);
+    
 }

@@ -1,7 +1,10 @@
 #include "mediator.class.hpp"
-#include "client.class.hpp"
-#include "server.class.hpp"
+
 #include <iostream>
+
+Mediator::Mediator(Server& server) : __server(server) {}
+
+Mediator::Mediator() {}
 
 static bool valid_name(std::string nickname){
     if (nickname.size() > 9)
@@ -12,9 +15,7 @@ static bool valid_name(std::string nickname){
     }
     return true;
 }
-void Mediator::
-pass_cmd(Client *client, Server *server) {
-    puts("here\n");
+void Mediator::pass_cmd(Client *client, Server server) {
     if (client->is_connected()) {
         client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
         return;
@@ -24,7 +25,7 @@ pass_cmd(Client *client, Server *server) {
         client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
         return;
     }
-    if (client->__cmd[1] == server->get_password()) {
+    if (client->__cmd[1] == server.get_password()) {
         client->set_accepted(true);
         return;
     }
@@ -66,7 +67,7 @@ void Mediator::nick_cmd(Client *client){
         return ;
     } else {
         
-        for (std::map<int,Client>::iterator it = __server->get_clients().begin(); it != __server->get_clients().end();++it) {
+        for (std::map<int,Client>::iterator it = __server.get_clients().begin(); it != __server.get_clients().end();++it) {
             if (it->second.get_nickname() == client->__cmd[1]) {
                 client->put_message(ERR_NICKNAMEINUSE, ":Nickname is already in use");
                 return ;
@@ -78,6 +79,6 @@ void Mediator::nick_cmd(Client *client){
     return;
 }
 
-Server* Mediator::get_server() {
+Server Mediator::get_server() {
     return this->__server;
 }

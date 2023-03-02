@@ -2,11 +2,11 @@
 #ifndef PASS_CMD_CLASS_HPP
 # define PASS_CMD_CLASS_HPP
 
-#include "client.class.hpp"
 #include "command.interface.hpp"
-#include "mediator.class.hpp"
 
+class Client;
 class Server;
+
 
 class Pass : public Command
 {

@@ -1,9 +1,8 @@
 #ifndef NICK_CMD_CLASS_HPP
 # define NICK_CMD_CLASS_HPP
 
-#include "client.class.hpp"
 #include "command.interface.hpp"
-#include "mediator.class.hpp"
+class Client;
 
 class Nick :public Command {
     private:
