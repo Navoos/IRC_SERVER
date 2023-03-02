@@ -3,8 +3,8 @@
 #include <vector>
 #include <string>
 #include "channel.class.hpp"
-
-class Mediator;
+#include "mediator.class.hpp"
+class Server;
 
 class Client {
   private:
@@ -27,12 +27,13 @@ class Client {
     Client(int fd);
     void    update_client(std::string &str);
     void    set_accepted(bool acc);
-    bool    set_connected(bool connected);
+    void    set_connected(bool connected);
     void	set_nickname(std::string nick);
 	void	set_username(std::string user);
     std::string	    get_nickname(void) const ;
 	std::string	    get_username(void) const ;
     bool    check_connection(void);
+    void    execute(Mediator *mediator);
 
 };
 #endif

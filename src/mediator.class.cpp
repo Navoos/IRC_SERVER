@@ -12,14 +12,16 @@ static bool valid_name(std::string nickname){
     }
     return true;
 }
-void Mediator::pass_cmd(Client *client, Server *server) {
+void Mediator::
+pass_cmd(Client *client, Server *server) {
+    puts("here\n");
     if (client->is_connected()) {
-        client->put_message(ERR_ALREADYREGISTRED, "registred");
+        client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
         return;
     }
     if (client->__cmd.size() != 2) {
         
-        client->put_message(ERR_NEEDMOREPARAMS, "No parameters");
+        client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
         return;
     }
     if (client->__cmd[1] == server->get_password()) {
@@ -27,7 +29,7 @@ void Mediator::pass_cmd(Client *client, Server *server) {
         return;
     }
     else {
-        client->put_message(ERR_PASSWDMISMATCH, "Password incorrect");
+        client->put_message(ERR_PASSWDMISMATCH, ":Password incorrect");
         return; 
     }
     
@@ -37,10 +39,10 @@ void Mediator::pass_cmd(Client *client, Server *server) {
 
 void Mediator::user_cmd(Client *client){
     if (client->is_connected()){
-        client->put_message(ERR_ALREADYREGISTRED, "registred");
+        client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
     }
     if (client->__cmd.size() < 5){
-		client->put_message(ERR_NEEDMOREPARAMS, "No parameters");
+		client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
         return ;
     }
     client->check_connection();
@@ -55,12 +57,12 @@ void Mediator::nick_cmd(Client *client){
 
 	if (client->__cmd.size() != 2 || client->__cmd[1].length() == 0)
     {
-		client->put_message(ERR_NONICKNAMEGIVEN, "Not given nickname");
+		client->put_message(ERR_NONICKNAMEGIVEN, ":Not given nickname");
         return ;
     }
 
     if (!valid_name(client->__cmd[1])){
-        client->put_message(ERR_ERRONEUSNICKNAME, "Error nickname");
+        client->put_message(ERR_ERRONEUSNICKNAME, ":Erroneus nickname");
         return ;
     } else {
         
@@ -71,6 +73,11 @@ void Mediator::nick_cmd(Client *client){
             }
         }
     }
+    client->set_nickname(client->__cmd[1]);
     client->check_connection();
     return;
+}
+
+Server* Mediator::get_server() {
+    return this->__server;
 }

@@ -55,7 +55,7 @@ void    Client::update_client(std::string &str) {
 
 void Client::put_message(std::string name, std::string message)
 {
-    std::cout <<":IRC_SERVER " << name << " " << get_nickname <<" " <<message << std::endl;
+    std::cout <<":IRC_SERVER " << name << " " << get_nickname() <<" " <<message << std::endl;
 }
 
 
@@ -63,6 +63,11 @@ bool    Client::check_connection(void){
     if (is_connected() || !is_accepted() || get_nickname().empty() || get_username().empty())
         return false;
     set_connected(true);
-    std::cout << "welcome to servre";
+    std::cout << "welcome to server";
     return true;
+}
+
+void    Client::execute(Mediator *mediator){
+    if (__cmd[1] == "PASS")
+        mediator->pass_cmd(this, mediator->get_server());
 }
