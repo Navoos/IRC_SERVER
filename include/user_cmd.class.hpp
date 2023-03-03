@@ -1,9 +1,8 @@
 #ifndef USER_CMD_CLASS_HPP
 # define USER_CMD_CLASS_HPP
 
-#include "client.class.hpp"
 #include "command.interface.hpp"
-#include "mediator.class.hpp"
+class Client;
 
 class User : public Command {
 
