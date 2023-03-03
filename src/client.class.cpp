@@ -3,6 +3,8 @@
 #include "mediator.class.hpp"
 #include <cstddef>
 #include <iostream>
+#include <sstream>
+#include <sys/socket.h>
 
 bool		Client::is_connected(void) { 
     return __connected; }
@@ -24,6 +26,7 @@ void		Client::set_username(std::string username) {
 
 std::string	Client::get_nickname(void) const { return __nick; }
 std::string	Client::get_username(void) const { return __user; }
+int			Client::get_socket(void) const { return __fd; }
 Client::Client(int fd, std::string &server_password, Mediator *mediator) : __server_password(server_password), __fd(fd), __mediator(mediator) {
     this->__connected = false;
     this->__accepted = false;
@@ -57,9 +60,16 @@ void    Client::update_client(std::string &str) {
     }
 }
 
-void Client::put_message(std::string name, std::string message)
+void  Client::put_message(std::string code, std::string message)
 {
-    std::cout <<":IRC_SERVER " << name << " " << get_nickname() <<" " <<message << std::endl;
+    std::stringstream  msg;
+
+    msg << ":ft_irc " << code << " " <<  get_nickname() << " " << message << "\r\n";
+
+    if (send(get_socket(), msg.str().c_str(), msg.str().length(), 0) == -1) {
+        perror("send:");
+        //TODO: remove client if failed operation
+    }
 }
 
 
