@@ -60,28 +60,38 @@ void    Client::update_client(std::string &str) {
     }
 }
 
-void  Client::put_message(std::string code, std::string message)
+bool  Client::put_message(std::string code, std::string message)
 {
     std::stringstream  msg;
-
-    msg << ":ft_irc " << code << " " <<  get_nickname() << " " << message << "\r\n";
+    if (get_nickname().size() == 0)
+        msg << ":ft_irc " << code << " " <<  "*" << " " << message << "\r\n";
+    else
+        msg << ":ft_irc " << code << " " <<  get_nickname() << " " << message << "\r\n";
+        
 
     if (send(get_socket(), msg.str().c_str(), msg.str().length(), 0) == -1) {
         perror("send:");
-        //TODO: remove client if failed operation
+        return (false);
     }
+    return (true);
 }
 
 
 bool    Client::check_connection(void){
-    if (is_connected() || !is_accepted() || get_nickname().empty() || get_username().empty())
+    std::stringstream msg;
+    msg << "welcome to server\n";
+  
+    if ( get_nickname().empty() || get_username().empty() || is_connected() || !is_accepted())
         return false;
     set_connected(true);
-    std::cout << "welcome to server";
+    if (send(get_socket(), msg.str().c_str(), msg.str().length(), 0) == -1) {
+        perror("send:");
+        return (false);
+    }
     return true;
 }
 
-void    Client::execute(Mediator *mediator){
+void   Client::execute(Mediator *mediator){
     if (__cmd[0] == "PASS" || __cmd[0] == "pass")
         mediator->pass_cmd(this, mediator->get_server());
     if (__cmd[0] == "USER" || __cmd[0] == "user")
