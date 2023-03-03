@@ -1,10 +1,9 @@
 #include "mediator.class.hpp"
+#include "client.class.hpp"
 
 #include <iostream>
 
 Mediator::Mediator(Server& server) : __server(server) {}
-
-Mediator::Mediator() {}
 
 static bool valid_name(std::string nickname){
     if (nickname.size() > 9)
@@ -67,8 +66,8 @@ void Mediator::nick_cmd(Client *client){
         return ;
     } else {
         
-        for (std::map<int,Client>::iterator it = __server.get_clients().begin(); it != __server.get_clients().end();++it) {
-            if (it->second.get_nickname() == client->__cmd[1]) {
+        for (std::map<int,Client *>::iterator it = this->__clients.begin(); it != this->__clients.end(); ++it) {
+            if (it->second->get_nickname() == client->__cmd[1]) {
                 client->put_message(ERR_NICKNAMEINUSE, ":Nickname is already in use");
                 return ;
             }
@@ -77,6 +76,27 @@ void Mediator::nick_cmd(Client *client){
     client->set_nickname(client->__cmd[1]);
     client->check_connection();
     return;
+}
+
+void    Mediator::delete_client(int fd) {
+    this->__clients.erase(fd);
+}
+
+bool Mediator::find_client(int fd) {
+    if (this->__clients.find(fd) == this->__clients.end()) {
+        return false;
+    }
+    return true;
+}
+
+void Mediator::set_client(int fd, std::string &buffer) {
+    this->__clients.at(fd)->update_client(buffer);
+}
+
+void Mediator::add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator) {
+    Client *client = new Client(fd, password, mediator);
+    client->update_client(buffer);
+    this->__clients.insert(std::make_pair(fd, client));
 }
 
 Server Mediator::get_server() {

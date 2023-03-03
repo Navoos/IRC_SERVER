@@ -24,7 +24,9 @@ void		Client::set_username(std::string username) {
 
 std::string	Client::get_nickname(void) const { return __nick; }
 std::string	Client::get_username(void) const { return __user; }
-Client::Client(int fd, std::string &server_password) : __server_password(server_password), __fd(fd) {
+Client::Client(int fd, std::string &server_password, Mediator *mediator) : __server_password(server_password), __fd(fd), __mediator(mediator) {
+    this->__connected = false;
+    this->__accepted = false;
 }
 
 void    Client::update_client(std::string &str) {
@@ -69,12 +71,11 @@ bool    Client::check_connection(void){
     return true;
 }
 
-void    Client::execute(Mediator mediator){
+void    Client::execute(Mediator *mediator){
     if (__cmd[0] == "PASS" || __cmd[0] == "pass")
-        mediator.pass_cmd(this, mediator.get_server());
+        mediator->pass_cmd(this, mediator->get_server());
     if (__cmd[0] == "USER" || __cmd[0] == "user")
-        mediator.user_cmd(this);
+        mediator->user_cmd(this);
     if (__cmd[0] == "NICK" || __cmd[0] == "nick")
-        mediator.nick_cmd(this);
-    
+        mediator->nick_cmd(this);
 }
