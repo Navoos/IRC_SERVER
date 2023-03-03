@@ -1,0 +1,6 @@
+*/*.o
+ircsrv*
+compile_commands.json
+.cache*
+.vscode*
+bin/ircserv
