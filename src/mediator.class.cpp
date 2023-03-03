@@ -14,57 +14,68 @@ static bool valid_name(std::string nickname){
     }
     return true;
 }
-bool Mediator::pass_cmd(Client *client, Server server) {
+void Mediator::pass_cmd(Client *client, Server server) {
     if (client->is_connected()) {
-        return !client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
+        client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
+        return;
     }
 
     if (client->__cmd.size() != 2) {
-        return !client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
+        client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
+        return;
     }
     if (client->__cmd[1] == server.get_password()) {
         client->set_accepted(true);
     }
     else {
-        return !client->put_message(ERR_PASSWDMISMATCH, ":Password incorrect"); 
+        client->put_message(ERR_PASSWDMISMATCH, ":Password incorrect");
+        return; 
     }
-    return client->check_connection();
+    client->check_connection();
+    return;
 }
 
-bool Mediator::user_cmd(Client *client){
+void Mediator::user_cmd(Client *client){
     if (client->is_connected()){
-        return !client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
+        client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
+        return;
     }
     if (client->__cmd.size() < 5){
-		return !client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
+		client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
+        return;
     }
     client->set_username(client->__cmd[1]); 
-    return client->check_connection();
+    client->check_connection();
+    return;
 }
 
-bool    Mediator::nick_cmd(Client *client){
+void    Mediator::nick_cmd(Client *client){
     if (client->is_connected()){
-        return !client->put_message(ERR_RESTRICTED, ":Your connection is restricted!");
+        client->put_message(ERR_RESTRICTED, ":Your connection is restricted!");
+        return;
     }
 
 	if (client->__cmd.size() != 2 || client->__cmd[1].length() == 0)
     {
-		return !client->put_message(ERR_NONICKNAMEGIVEN, ":Not given nickname");
+		client->put_message(ERR_NONICKNAMEGIVEN, ":Not given nickname");
+        return;
     }
 
     if (!valid_name(client->__cmd[1])){
-        return !client->put_message(ERR_ERRONEUSNICKNAME, ":Erroneus nickname");
-    
+        client->put_message(ERR_ERRONEUSNICKNAME, ":Erroneus nickname");
+        return;
     } else {
         
         for (std::map<int,Client *>::iterator it = this->__clients.begin(); it != this->__clients.end(); ++it) {
             if (it->second->get_nickname() == client->__cmd[1]) {
-                return !client->put_message(ERR_NICKNAMEINUSE, ":Nickname is already in use");
+                client->put_message(ERR_NICKNAMEINUSE, ":Nickname is already in use");
+                return;
             }
         }
     }
     client->set_nickname(client->__cmd[1]);
-    return client->check_connection();
+    client->check_connection();
+    return;
 }
 
 void    Mediator::delete_client(int fd) {

@@ -9,7 +9,8 @@
 #define ERR_NONICKNAMEGIVEN    "431"
 #define ERR_ERRONEUSNICKNAME   "432"
 #define ERR_NICKNAMEINUSE   "433"
-#define ERR_RESTRICTED   "001"
+#define ERR_RESTRICTED   "018"
+#define RPL_WELCOME  "001"
 #include "server.class.hpp"
 class Channel;
 class Client;
@@ -18,9 +19,9 @@ class Server;
 class Mediator {
   public:
       Server get_server();
-      bool  pass_cmd(Client *client, Server server);   // houssam
-      bool  user_cmd(Client *client);   // houssam
-      bool  nick_cmd(Client *client);   // houssam
+      void pass_cmd(Client *client, Server server);   // houssam
+      void  user_cmd(Client *client);   // houssam
+      void  nick_cmd(Client *client);   // houssam
       void  join_cmd(Client *client, Channel *channel);   //houssam
       void  part_cmd(Client *client, Channel *channel);   //ayoub
       void  mode_cmd(Client *client, Channel *channel);   //ayoub

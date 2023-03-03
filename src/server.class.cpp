@@ -71,10 +71,13 @@ void Server::run() {
 			--fd_count;
 		  } else {
 			std::string s_buffer(buf);
+            // std::cout << "{" << s_buffer << "}\n";
 			if (this->__mediator->find_client(this->__fds[i].fd)) {
+                // std::cout << "not new\n";
                 this->__mediator->set_client(this->__fds[i].fd, s_buffer);
 			} else {
 				// std::cerr << "Adding new client ..." << std::endl;
+                // std::cout << "mojoud\n";
                 this->__mediator->add_client(this->__fds[i].fd, this->__password, s_buffer, this->__mediator);
 			}
 		  }
