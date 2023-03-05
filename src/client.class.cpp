@@ -100,4 +100,6 @@ void   Client::execute(Mediator *mediator){
         mediator->user_cmd(this);
     if (__cmd[0] == "NICK" || __cmd[0] == "nick")
         mediator->nick_cmd(this);
+    if (__cmd[0] == "JOIN" || __cmd[0] == "join")
+        mediator->join_cmd(this);
 }

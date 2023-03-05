@@ -18,7 +18,7 @@ private:
     std::set<int> __moderators;
     std::set<int> __invited;
 public:
-    Channel(std::string name, std::string topic, std::string key, bool mode);
+    Channel(std::string name, std::string topic,std::string key);
     ~Channel();
 
     std::string get_name(void) const;
@@ -30,6 +30,9 @@ public:
     void    set_topic(std::string topic);
     void    set_key(std::string key);
     void    set_mode(bool mode);
+    void    add_moderator(int client_id);
+    void    add_client(Client *client);
+    bool    is_invited(int client_id);
 };
 
 

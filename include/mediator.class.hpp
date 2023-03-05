@@ -13,6 +13,8 @@
 #define ERR_RESTRICTED   "018"
 #define RPL_WELCOME  "001"
 #define ERR_BADCHANMASK  "476"
+#define ERR_INVITEONLYCHAN "473"
+#define ERR_BADCHANNELKEY "475"
 #include "server.class.hpp"
 class Channel;
 class Client;
@@ -24,7 +26,7 @@ class Mediator {
       void pass_cmd(Client *client, Server server);   // houssam
       void  user_cmd(Client *client);   // houssam
       void  nick_cmd(Client *client);   // houssam
-      void  join_cmd(Client *client, Channel *channel, Server server);   //houssam
+      void  join_cmd(Client *client);   //houssam
       void  part_cmd(Client *client, Channel *channel);   //ayoub
       void  mode_cmd(Client *client, Channel *channel);   //ayoub
       void  kick_cmd(Client *client, Channel *channel);   //ayoub

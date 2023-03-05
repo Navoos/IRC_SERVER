@@ -1,10 +1,11 @@
 #include "channel.class.hpp"
+#include "client.class.hpp"
 
-Channel::Channel(std::string name, std::string topic, std::string key, bool mode){
+Channel::Channel(std::string name, std::string topic, std::string key){
     __name = name;
     __topic = topic;
     __key = key;
-    __mode = mode;
+    __mode = false;
 }
 Channel::~Channel(){};
 
@@ -37,4 +38,20 @@ void Channel::set_topic(std::string topic){
 
 void Channel::set_mode(bool mode){
     __mode = mode;
+}
+
+void Channel::add_moderator(int client_id) {
+    this->__moderators.insert(client_id);
+}
+
+void Channel::add_client(Client *client) {
+    this->__clients.insert(std::make_pair(client->get_socket(), client));
+}
+
+bool Channel::is_invited(int client_id) {
+    if (this->__invited.find(client_id) != this->__invited.end()) {
+        return true;
+    } else {
+        return false;
+    }
 }
