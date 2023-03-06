@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <sys/socket.h>
+#include <sys/param.h>
 
 bool		Client::is_connected(void) { 
     return __connected; }
@@ -37,7 +38,7 @@ void    Client::update_client(std::string &str) {
     // remove all \r from input
     size_t  pos = this->__buffer.find("\r");
     while (pos != std::string::npos) {
-        this->__buffer.erase(pos);
+        this->__buffer.erase(this->__buffer.begin() + pos);
         pos = this->__buffer.find("\r");
     }
     // parse each command at a time
@@ -60,32 +61,45 @@ void    Client::update_client(std::string &str) {
     }
 }
 
-void  Client::put_message(std::string code, std::string message)
+bool  Client::put_message(std::string code, std::string message)
 {
     std::stringstream  msg;
-
-    msg << ":ft_irc " << code << " " <<  get_nickname() << " " << message << "\r\n";
+    if (get_nickname().size() == 0)
+        msg << ":ft_irc " << code << " " <<  "*" << " " << message << "\r\n";
+    else
+        msg << ":ft_irc " << code << " " <<  get_nickname() << " " << message << "\r\n";
+        
 
     if (send(get_socket(), msg.str().c_str(), msg.str().length(), 0) == -1) {
         perror("send:");
-        //TODO: remove client if failed operation
+        return (false);
     }
+    return (true);
 }
 
 
 bool    Client::check_connection(void){
-    if (is_connected() || !is_accepted() || get_nickname().empty() || get_username().empty())
+    if ( get_nickname().empty() || get_username().empty() || is_connected() || !is_accepted())
         return false;
     set_connected(true);
-    std::cout << "welcome to server";
+    char hostname[MAXHOSTNAMELEN];
+    memset(hostname, 0, sizeof hostname);
+    if (gethostname(hostname, MAXHOSTNAMELEN) == -1) {
+        perror("gethotname");
+        put_message(RPL_WELCOME, ":Welcome to the Internet Relay Network, " + __nick + "\n");
+    }
+    else 
+        put_message(RPL_WELCOME, ":Welcome to the Internet Relay Network, " + __nick + " [ ! " + __user + "@" + hostname + "]\n");
     return true;
 }
 
-void    Client::execute(Mediator *mediator){
+void   Client::execute(Mediator *mediator){
     if (__cmd[0] == "PASS" || __cmd[0] == "pass")
         mediator->pass_cmd(this, mediator->get_server());
     if (__cmd[0] == "USER" || __cmd[0] == "user")
         mediator->user_cmd(this);
     if (__cmd[0] == "NICK" || __cmd[0] == "nick")
         mediator->nick_cmd(this);
+    if (__cmd[0] == "JOIN" || __cmd[0] == "join")
+        mediator->join_cmd(this);
 }

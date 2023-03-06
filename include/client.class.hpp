@@ -24,7 +24,7 @@ class Client {
     Client(int fd, std::string &password, Mediator *mediator);
     bool    is_connected();
     bool    is_accepted(); 
-    void    put_message(std::string name, std::string message);
+    bool    put_message(std::string name, std::string message);
     void    update_client(std::string &str);
     void    set_accepted(bool acc);
     void    set_connected(bool connected);

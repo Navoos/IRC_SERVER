@@ -1,7 +1,12 @@
 #include "mediator.class.hpp"
 #include "client.class.hpp"
+#include "channel.class.hpp"
 
 #include <iostream>
+#include <vector>
+#include <sstream>
+#include <sys/socket.h>
+#include <string>
 
 Mediator::Mediator(Server& server) : __server(server) {}
 
@@ -19,20 +24,18 @@ void Mediator::pass_cmd(Client *client, Server server) {
         client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
         return;
     }
+
     if (client->__cmd.size() != 2) {
-        
         client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
         return;
     }
     if (client->__cmd[1] == server.get_password()) {
         client->set_accepted(true);
-        return;
     }
     else {
         client->put_message(ERR_PASSWDMISMATCH, ":Password incorrect");
         return; 
     }
-    
     client->check_connection();
     return;
 }
@@ -40,36 +43,38 @@ void Mediator::pass_cmd(Client *client, Server server) {
 void Mediator::user_cmd(Client *client){
     if (client->is_connected()){
         client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
+        return;
     }
     if (client->__cmd.size() < 5){
 		client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
-        return ;
+        return;
     }
+    client->set_username(client->__cmd[1]); 
     client->check_connection();
     return;
 }
 
-void Mediator::nick_cmd(Client *client){
+void    Mediator::nick_cmd(Client *client){
     if (client->is_connected()){
-        std::cout << "Your connection is restricted!";
+        client->put_message(ERR_RESTRICTED, ":Your connection is restricted!");
         return;
     }
 
 	if (client->__cmd.size() != 2 || client->__cmd[1].length() == 0)
     {
 		client->put_message(ERR_NONICKNAMEGIVEN, ":Not given nickname");
-        return ;
+        return;
     }
 
     if (!valid_name(client->__cmd[1])){
         client->put_message(ERR_ERRONEUSNICKNAME, ":Erroneus nickname");
-        return ;
+        return;
     } else {
         
         for (std::map<int,Client *>::iterator it = this->__clients.begin(); it != this->__clients.end(); ++it) {
             if (it->second->get_nickname() == client->__cmd[1]) {
                 client->put_message(ERR_NICKNAMEINUSE, ":Nickname is already in use");
-                return ;
+                return;
             }
         }
     }
@@ -101,4 +106,81 @@ void Mediator::add_client(int fd, std::string &password, std::string &buffer, Me
 
 Server Mediator::get_server() {
     return this->__server;
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> result;
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        result.push_back(item);
+    }
+    return result;
+}
+
+void Mediator::join_cmd(Client *client){
+    if (client->__cmd.size() < 2){
+        client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
+        return;
+    }
+    std::vector<std::string> channels = std::vector<std::string>();
+    std::vector<std::string> keys = std::vector<std::string>();
+    if (client->__cmd.size() >= 2)
+        channels = split(client->__cmd[1], ',');
+    if (client->__cmd.size() >= 3) {
+        keys = split(client->__cmd[2], ',');
+    }
+    std::vector<std::string>::iterator it = channels.begin();
+    int j = 0;
+    for (; it != channels.end(); ++it, ++j){
+        if (it->c_str()[0] != '#')
+        {
+            client->put_message(ERR_BADCHANMASK, ":Bad Channel Mask");
+            return ;
+        }
+        if (this->__channels.find(*it) == this->__channels.end()) {
+            Channel *channel = NULL;
+
+            if (!keys.empty() && j < (int)keys.size()) {
+                channel = new Channel(*it, "", keys[j]);
+            } else
+                channel = new Channel(*it, "", "");
+            channel->add_moderator(client->get_socket());
+            channel->add_client(client);
+            this->__channels.insert(std::make_pair(*it, channel));
+        } else {
+            Channel *channel = this->__channels.at(*it);
+            if (channel->find_client(client->get_socket())) {
+                std::string string = ":" + client->get_nickname() + " 443 * is already on channel\n";
+                if (send(client->get_socket(), string.c_str(), string.size(), 0) == -1){
+                    perror ("send:");
+                    return ;
+                }
+                return ;
+            }
+            if (channel->get_mode()) {
+                if (channel->is_invited(client->get_socket())) {
+                    if (!keys.empty() && j < (int)keys.size()) {
+                        if (keys[j] == channel->get_key()) {
+                                channel->add_client(client);
+                        } else {
+                            client->put_message(ERR_BADCHANNELKEY, channel->get_name() + " " + ":Cannot join channel (+k)");
+                        }
+                    }
+                } else {
+                    client->put_message(ERR_INVITEONLYCHAN, channel->get_name() + " " + ":Cannot join channel (+i)");
+                }
+            } else {
+                    if (!keys.empty() && j < (int)keys.size()) {
+                        if (!keys.empty() && j < (int)keys.size() && keys[j] == channel->get_key()) {
+                                channel->add_client(client);
+                        } else {
+                            client->put_message(ERR_BADCHANNELKEY, channel->get_name() + " " + ":Cannot join channel (+k)");
+                        }
+                        } else {
+                            channel->add_client(client);
+                }
+            }
+        }
+    }
 }
