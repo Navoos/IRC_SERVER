@@ -21,7 +21,17 @@ std::string Channel::get_topic(void) const {
 }
 
 bool Channel::get_mode(void) const{
-    return __mode;
+    if (__mode)
+        return true;
+    return false;
+}
+
+bool Channel::find_client(int client_id) {
+    if (this->__clients.find(client_id) == this->__clients.end()) {
+        return false;
+    } else {
+        return true;
+    }
 }
 
 void Channel::set_name(std::string name){
@@ -54,4 +64,8 @@ bool Channel::is_invited(int client_id) {
     } else {
         return false;
     }
+}
+
+std::map<int, Client*> Channel::get_all_client() {
+    return this->__clients;
 }

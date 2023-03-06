@@ -46,7 +46,6 @@ Socket::Socket(const std::string port, const std::string address) : __port(port)
       close(this->__socket);
       continue;
     }
-    puts("here");
     break;
   }
   freeaddrinfo(res);

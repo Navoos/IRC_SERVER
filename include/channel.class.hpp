@@ -33,6 +33,8 @@ public:
     void    add_moderator(int client_id);
     void    add_client(Client *client);
     bool    is_invited(int client_id);
+    bool    find_client(int client_id);
+    std::map<int, Client*> get_all_client();
 };
 
 

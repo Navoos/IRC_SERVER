@@ -119,41 +119,50 @@ std::vector<std::string> split(const std::string &s, char delim) {
 }
 
 void Mediator::join_cmd(Client *client){
-    std::vector<std::string> channels = split(client->__cmd[1], ',');
-    Channel *channel = NULL;
-    std::vector<std::string> keys;
-    if (client->__cmd.size() > 2) {
-        keys = split(client->__cmd[2], ',');
-    } else {
-        keys = std::vector<std::string>();
-    }
     if (client->__cmd.size() < 2){
         client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
         return;
     }
+    std::vector<std::string> channels = std::vector<std::string>();
+    std::vector<std::string> keys = std::vector<std::string>();
+    if (client->__cmd.size() >= 2)
+        channels = split(client->__cmd[1], ',');
+    if (client->__cmd.size() >= 3) {
+        keys = split(client->__cmd[2], ',');
+    }
     std::vector<std::string>::iterator it = channels.begin();
     int j = 0;
     for (; it != channels.end(); ++it, ++j){
-
         if (it->c_str()[0] != '#')
         {
             client->put_message(ERR_BADCHANMASK, ":Bad Channel Mask");
             return ;
         }
         if (this->__channels.find(*it) == this->__channels.end()) {
-            if (!keys[j].empty())
+            Channel *channel = NULL;
+
+            if (!keys.empty() && j < (int)keys.size()) {
                 channel = new Channel(*it, "", keys[j]);
-            else
+            } else
                 channel = new Channel(*it, "", "");
             channel->add_moderator(client->get_socket());
             channel->add_client(client);
             this->__channels.insert(std::make_pair(*it, channel));
         } else {
+            Channel *channel = this->__channels.at(*it);
+            if (channel->find_client(client->get_socket())) {
+                std::string string = ":" + client->get_nickname() + " 443 * is already on channel\n";
+                if (send(client->get_socket(), string.c_str(), string.size(), 0) == -1){
+                    perror ("send:");
+                    return ;
+                }
+                return ;
+            }
             if (channel->get_mode()) {
                 if (channel->is_invited(client->get_socket())) {
-                    if (!keys[j].empty()) {
+                    if (!keys.empty() && j < (int)keys.size()) {
                         if (keys[j] == channel->get_key()) {
-                            channel->add_client(client);
+                                channel->add_client(client);
                         } else {
                             client->put_message(ERR_BADCHANNELKEY, channel->get_name() + " " + ":Cannot join channel (+k)");
                         }
@@ -162,18 +171,16 @@ void Mediator::join_cmd(Client *client){
                     client->put_message(ERR_INVITEONLYCHAN, channel->get_name() + " " + ":Cannot join channel (+i)");
                 }
             } else {
-                if (!keys[j].empty()) {
-                        if (keys[j] == channel->get_key()) {
-                            channel->add_client(client);
+                    if (!keys.empty() && j < (int)keys.size()) {
+                        if (!keys.empty() && j < (int)keys.size() && keys[j] == channel->get_key()) {
+                                channel->add_client(client);
                         } else {
                             client->put_message(ERR_BADCHANNELKEY, channel->get_name() + " " + ":Cannot join channel (+k)");
                         }
-                } else {
-                    channel->add_client(client);
+                        } else {
+                            channel->add_client(client);
                 }
             }
         }
-
     }
-
 }
