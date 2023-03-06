@@ -27,16 +27,6 @@ class Mediator {
       void  quit_cmd(Client *client);   //ayoub
       void  delete_client(int fd);
       bool  find_client(int fd);
-      void  set_client(int fd, std::string &buffer);
-      void  add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator);
-      // todo: add invit command
-      // todo: add topic command
-      // HOUSSAM: add additional commands here
-      Mediator(Server& server);
-  private:
-      std::map<int, Client*>    __clients;
-      std::vector<Channel*>     __channels;
-      Server                    __server;
 };
 #endif
 #ifndef MEDIATOR_CLASS_HPP
