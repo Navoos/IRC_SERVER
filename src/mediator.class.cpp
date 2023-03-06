@@ -137,6 +137,15 @@ void Mediator::join_cmd(Client *client){
         {
             client->put_message(ERR_BADCHANMASK, ":Bad Channel Mask");
             return ;
+        }else {
+            if(it->size() == 1){
+            std::string string = ":" + client->get_nickname() + " 480 * you need name of channel\n";
+                if (send(client->get_socket(), string.c_str(), string.size(), 0) == -1){
+                    perror ("send:");
+                    return ;
+                }
+                return ;
+            }
         }
         if (this->__channels.find(*it) == this->__channels.end()) {
             Channel *channel = NULL;
