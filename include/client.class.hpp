@@ -9,6 +9,7 @@ class Client {
   private:
     std::vector<std::string> __cmd;
     std::string             &__server_password;
+    std::map<std::string, Channel*> __channels;
 	std::string   __buffer;
 	  int           __fd;
     Mediator *__mediator;
@@ -34,6 +35,7 @@ class Client {
 	std::string	    get_username(void) const ;
     bool    check_connection(void);
     void    execute(Mediator *mediator);
+    void    subscribe_to_channel(Channel *channel);
     int			get_socket(void) const;
 
 };
