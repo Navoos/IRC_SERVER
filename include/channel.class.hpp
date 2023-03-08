@@ -37,5 +37,4 @@ public:
     std::map<int, Client*> get_all_client();
 };
 
-
 #endif

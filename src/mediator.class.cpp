@@ -184,3 +184,54 @@ void Mediator::join_cmd(Client *client){
         }
     }
 }
+
+//deadpool
+
+std::map<std::string, Channel*> Mediator::get_channels() {
+    return (this->__channels);
+}
+
+bool Mediator::check_if_empty(Client *client, std::vector<std::string> const cmd_helper) {
+    (void)client;
+    for (size_t i = 0; i < cmd_helper.size(); i++) {
+        if (cmd_helper[i][1] == '\0'){
+            std::string error = ":" + client->get_nickname() + " 580 * enter the name of channel\n";
+            if (send(client->get_socket(), error.c_str(), error.size(), 0) == -1)
+                perror("send:");
+            return false;
+        }
+    }
+    return true;
+}
+
+void Mediator::part_cmd(Client *client, std::vector<std::string> __cmd) {
+    std::vector<std::string> cmd_helper = std::vector<std::string>();
+    if (__cmd.size() < 2) {
+        client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
+        return ;
+    }
+    else {
+        cmd_helper = split(__cmd[1], ',');
+        int i = 0;
+        for (std::vector<std::string>::iterator it = cmd_helper.begin(); it != cmd_helper.end(); ++it, ++i) {
+            if (cmd_helper[i].empty())
+                break;
+            if (cmd_helper[i][0] != '#') {
+                client->put_message(ERR_BADCHANMASK, ":Bad channel mask");
+                return ;
+            }
+            else {
+                if (!check_if_empty(client, cmd_helper))
+                    return ;
+                if (this->__channels.find(*it) == this->__channels.end()) {
+                    client->put_message("403", ":No such channel");
+                    return ;
+                }
+                if (client->__channels.find(*it) == client->__channels.end()) {
+                    client->put_message("343434", ":the client is not in the channel");
+                    return ;
+                }
+            }
+        }
+    }
+}

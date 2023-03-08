@@ -26,8 +26,13 @@ class Mediator {
       void pass_cmd(Client *client, Server server);   // houssam
       void  user_cmd(Client *client);   // houssam
       void  nick_cmd(Client *client);   // houssam
-      void  join_cmd(Client *client);   //houssam
-      void  part_cmd(Client *client, Channel *channel);   //ayoub
+      void  join_cmd(Client *client);   // houssam
+      // deadpool
+        // std::vector<std::string> split(const std::string& input, const std::string& delimiter);
+        void part_cmd(Client *client, std::vector<std::string> __cmd);
+        bool check_if_empty(Client *client, std::vector<std::string> const cmd_helper);
+        std::map<std::string, Channel*> get_channels();
+    //   void  part_cmd(Client *client, Channel *channel);   //ayoub
       void  mode_cmd(Client *client, Channel *channel);   //ayoub
       void  kick_cmd(Client *client, Channel *channel);   //ayoub
       void  quit_cmd(Client *client);   //ayoub

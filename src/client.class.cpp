@@ -102,4 +102,7 @@ void   Client::execute(Mediator *mediator){
         mediator->nick_cmd(this);
     if (__cmd[0] == "JOIN" || __cmd[0] == "join")
         mediator->join_cmd(this);
+    //deadpool
+    if (__cmd[0] == "PART" || __cmd[0] == "part")
+        mediator->part_cmd(this, __cmd);
 }
