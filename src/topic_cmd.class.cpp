@@ -1,9 +1,10 @@
 #include "topic_cmd.class.hpp"
 
-Topic::Topic(Client *client,Channel *channel): __client(client), __channel(channel){}
+Topic::Topic(Client *client): __client(client) {
+}
 
 Topic::~Topic(){}
 
 void Topic::execute(Mediator* mediator) {
-        mediator->topic_cmd(__client, __channel);
+        mediator->topic_cmd(__client);
     }

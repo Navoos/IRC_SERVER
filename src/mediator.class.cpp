@@ -206,7 +206,7 @@ bool    Mediator::search_channel(std::string name, std::map<std::string, Channel
 }
 
 void    Mediator::topic_cmd(Client *client){
-    Channel *channel;
+
     if (client->__cmd.size() < 2){
         client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
         return;
@@ -227,18 +227,23 @@ void    Mediator::topic_cmd(Client *client){
             client->put_message(ERR_NOSUCHCHANNEL, ":No such channel");
             return;
         }else{
-            if (!channel->find_client(client->get_socket())){
+            Channel *channel = NULL;
+            channel = client->get_channel(client->__cmd[1]);
+            if (channel == NULL) {
                 client->put_message(ERR_NOTONCHANNEL, ":You're not on that channel");
                 return;   
             }
-            if (!channel->find_operator(client->get_socket())){
+            if (channel && !channel->find_operator(client->get_socket())){
                 client->put_message(ERR_CHANOPRIVSNEEDED, ":You're not channel operator");
+                return;
             }
-            else{
-                if (client->__cmd[2].compare(":") == 0)
-                    channel->set_topic("");
-                else
-                    channel->set_topic(client->__cmd[2]);
+            else {
+                if (client->__cmd.size() >= 3) {
+                    if (client->__cmd[2] == ":" && channel)
+                        channel->set_topic("");
+                    else if (channel)
+                        channel->set_topic(client->__cmd[2].substr(1));
+                }
             }
         }
     }
