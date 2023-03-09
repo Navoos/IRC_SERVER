@@ -1,18 +1,28 @@
 #include "server.class.hpp"
+#include "client.class.hpp"
+#include "socket.class.hpp"
 #include <iostream>
 #include <map>
 
-Server::Server(int &socket) : __socket(socket) {
-  fcntl(this->__socket, F_SETFL, O_NONBLOCK);
-  if (listen(this->__socket, BACKLOG) == -1)
-	exit(EXIT_FAILURE);
-  this->__fds.push_back(pollfd());
-  this->__fds[0].fd = this->__socket;
-  this->__fds[0].events = POLLIN;
+Server::Server(int &socket, std::string &password) : __socket(socket), __password(password) {
+    this->__mediator = new Mediator(*this);
+    fcntl(this->__socket, F_SETFL, O_NONBLOCK);
+    if (listen(this->__socket, BACKLOG) == -1)
+        exit(EXIT_FAILURE);
+    this->__fds.push_back(pollfd());
+    this->__fds[0].fd = this->__socket;
+    this->__fds[0].events = POLLIN;
 }
 
-Server&  Server::get_instance(int socket) {
-  static Server instance(socket);
+Server::~Server() {
+    if (this->__mediator) {
+        delete this->__mediator;
+    }
+}
+
+
+Server&  Server::get_instance(int socket, std::string &password) {
+  static Server instance(socket, password);
   return instance;
 }
 
@@ -56,18 +66,19 @@ void Server::run() {
 			  perror("recv");
 			}
 			close(this->__fds[i].fd);
-			this->__clients.erase(this->__fds[i].fd);
+			this->__mediator->delete_client(this->__fds[i].fd);
 			this->__fds.erase(this->__fds.begin() + i);
 			--fd_count;
 		  } else {
 			std::string s_buffer(buf);
-			if (this->__clients.find(this->__fds[i].fd) != this->__clients.end()) {
-				this->__clients.at(this->__fds[i].fd).update_client(s_buffer);
+            // std::cout << "{" << s_buffer << "}\n";
+			if (this->__mediator->find_client(this->__fds[i].fd)) {
+                // std::cout << "not new\n";
+                this->__mediator->set_client(this->__fds[i].fd, s_buffer);
 			} else {
-				std::cerr << "Adding new client ..." << std::endl;
-				Client client(this->__fds[i].fd);
-				this->__clients.insert(std::make_pair(this->__fds[i].fd, client));
-				this->__clients.at(this->__fds[i].fd).update_client(s_buffer);
+				// std::cerr << "Adding new client ..." << std::endl;
+                // std::cout << "mojoud\n";
+                this->__mediator->add_client(this->__fds[i].fd, this->__password, s_buffer, this->__mediator);
 			}
 		  }
 		}
@@ -75,3 +86,7 @@ void Server::run() {
 	}
   }
 }
+
+
+std::string Server::get_password(void) const
+{ return __password; }
