@@ -35,6 +35,7 @@ class Client {
 	std::string	    get_username(void) const ;
     bool    check_connection(void);
     void    execute(Mediator *mediator);
+    void    subscribe_to_channel(Channel *channel);
     int			get_socket(void) const;
 
 };

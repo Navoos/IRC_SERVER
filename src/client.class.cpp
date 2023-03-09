@@ -1,6 +1,7 @@
 #include "client.class.hpp"
 #include "server.class.hpp"
 #include "mediator.class.hpp"
+#include "channel.class.hpp"
 #include <cstddef>
 #include <iostream>
 #include <sstream>
@@ -92,6 +93,11 @@ bool    Client::check_connection(void){
         put_message(RPL_WELCOME, ":Welcome to the Internet Relay Network, " + __nick + " [ ! " + __user + "@" + hostname + "]\n");
     return true;
 }
+
+void Client::subscribe_to_channel(Channel *channel) {
+    this->__channels.insert(std::make_pair(channel->get_name(), channel));
+}
+
 
 void   Client::execute(Mediator *mediator){
     if (__cmd[0] == "PASS" || __cmd[0] == "pass")
