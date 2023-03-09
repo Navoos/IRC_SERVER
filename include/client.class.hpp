@@ -34,9 +34,10 @@ class Client {
 	void	set_username(std::string user);
 		std::string	    get_nickname(void) const ;
 	std::string	    get_username(void) const ;
-		bool    check_connection(void);
-		void    execute(Mediator *mediator);
-		void    subscribe_to_channel(Channel *channel);
-		int			get_socket(void) const;
+    bool    check_connection(void);
+    void    execute(Mediator *mediator);
+    void    subscribe_to_channel(Channel *channel);
+    int			get_socket(void) const;
+    Channel*    get_channel(std::string &name);
 };
 #endif

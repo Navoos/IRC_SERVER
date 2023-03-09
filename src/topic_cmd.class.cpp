@@ -1,6 +1,7 @@
 #include "topic_cmd.class.hpp"
 
-Topic::Topic(Client *client): __client(client){}
+Topic::Topic(Client *client): __client(client) {
+}
 
 Topic::~Topic(){}
 

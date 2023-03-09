@@ -15,6 +15,9 @@
 #define ERR_BADCHANMASK  "476"
 #define ERR_INVITEONLYCHAN "473"
 #define ERR_BADCHANNELKEY "475"
+#define ERR_NOSUCHCHANNEL "403"
+#define ERR_CHANOPRIVSNEEDED "482"
+#define ERR_NOTONCHANNEL "442"
 #include "server.class.hpp"
 class Channel;
 class Client;
@@ -35,11 +38,11 @@ class Mediator {
       void  mode_cmd(Client *client, Channel *channel);   //ayoub
       void  kick_cmd(Client *client, Channel *channel);   //ayoub
       void  quit_cmd(Client *client);   //ayoub
+      void  topic_cmd(Client *client);
       void  delete_client(int fd);
       bool  find_client(int fd);
       void  set_client(int fd, std::string &buffer);
       void  add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator);
-      void  topic_cmd(Client *client);
       bool  search_channel(std::string name, std::map<std::string, Channel*>     __channels);
       // todo: add invit command
       // todo: add topic command

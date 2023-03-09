@@ -160,6 +160,9 @@ void Mediator::join_cmd(Client *client){
             this->__channels.insert(std::make_pair(*it, channel));
         } else {
             Channel *channel = this->__channels.at(*it);
+            if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
+                channel->add_moderator(client->get_socket());
+            }
             if (channel->find_client(client->get_socket())) {
                 std::string string = ":" + client->get_nickname() + " 443 * is already on channel\n";
                 if (send(client->get_socket(), string.c_str(), string.size(), 0) == -1){
@@ -233,14 +236,68 @@ void Mediator::part_cmd(Client *client, std::vector<std::string> __cmd) {
                     return ;
                 }
                 if (client->__channels.find(*it) != client->__channels.end()) {
-                    Channel *channel = client->
-                    for (std::map<int, Client*>::iterator it1 = this->__clients.begin(); it1 != this->__clients.end(); ++it1) {
+                    Channel *channel = client->get_channel(*it);
+                    for (std::map<int, Client*>::iterator it1 = channel->get_all_client().begin(); it1 != channel->get_all_client().end(); ++it1) {
                         it1->second->put_message("340", ":leave channel");
                     }
+                    this->__channels.at(*it)->delete_client(client->get_socket());
                     client->__channels.erase(*it);
+                    
                 } else {
                     client->put_message("343434", ":the client is not in the channel");
                     return ;
+                }
+            }
+        }
+    }
+}
+
+bool    Mediator::search_channel(std::string name, std::map<std::string, Channel*>     __channels){
+    if (__channels.find(name) == __channels.end()) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+void    Mediator::topic_cmd(Client *client){
+
+    if (client->__cmd.size() < 2){
+        client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
+        return;
+    }else{
+        if (client->__cmd[1][0] != '#'){
+            client->put_message(ERR_BADCHANMASK, ":Bad Channel Mask");
+            return ;
+        }
+        if(client->__cmd[1].size() == 1){
+            std::string string = ":" + client->get_nickname() + " 480 * you need name of channel\n";
+                if (send(client->get_socket(), string.c_str(), string.size(), 0) == -1){
+                    perror ("send:");
+                    return ;
+                }
+                return ;
+            }
+        if (!search_channel(client->__cmd[1], this->__channels)){
+            client->put_message(ERR_NOSUCHCHANNEL, ":No such channel");
+            return;
+        }else{
+            Channel *channel = NULL;
+            channel = client->get_channel(client->__cmd[1]);
+            if (channel == NULL) {
+                client->put_message(ERR_NOTONCHANNEL, ":You're not on that channel");
+                return;   
+            }
+            if (channel && !channel->find_operator(client->get_socket())){
+                client->put_message(ERR_CHANOPRIVSNEEDED, ":You're not channel operator");
+                return;
+            }
+            else {
+                if (client->__cmd.size() >= 3) {
+                    if (client->__cmd[2] == ":" && channel)
+                        channel->set_topic("");
+                    else if (channel)
+                        channel->set_topic(client->__cmd[2].substr(1));
                 }
             }
         }
