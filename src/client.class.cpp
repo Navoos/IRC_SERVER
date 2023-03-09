@@ -98,6 +98,14 @@ void Client::subscribe_to_channel(Channel *channel) {
     this->__channels.insert(std::make_pair(channel->get_name(), channel));
 }
 
+Channel* Client::get_channel(std::string &name) {
+    if (this->__channels.find(name) == this->__channels.end()) {
+        return NULL;
+    } else {
+        return this->__channels.at(name);
+    }
+}
+
 
 void   Client::execute(Mediator *mediator){
     if (__cmd[0] == "PASS" || __cmd[0] == "pass")

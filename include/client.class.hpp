@@ -37,6 +37,6 @@ class Client {
     void    execute(Mediator *mediator);
     void    subscribe_to_channel(Channel *channel);
     int			get_socket(void) const;
-
+    Channel*    get_channel(std::string &name);
 };
 #endif
