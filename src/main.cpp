@@ -7,7 +7,7 @@ int main(int ac, char **av) {
     if (ac == 2) {
         Socket socket("4040");
         std::string password = std::string(av[1]);
-        Server server = Server::get_instance(socket.get_socket(), password);
+        Server server = Server::get_instance(socket.get_socket(), password); 
         server.run();
     } else {
         std::cout << "USAGE: ./bin/ircserv PORT PASSWORD\n";
