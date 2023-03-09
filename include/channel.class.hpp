@@ -34,6 +34,7 @@ public:
     void    add_client(Client *client);
     bool    is_invited(int client_id);
     bool    find_client(int client_id);
+    bool    find_operator(int client);            
     std::map<int, Client*> get_all_client();
 };
 

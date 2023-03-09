@@ -8,8 +8,9 @@ class Topic : public Command {
 
     private:
         Client *__client;
+        Channel *__channel;
     public:
-        Topic(Client *client);
+        Topic(Client *client, Channel *channel);
         virtual ~Topic();
 
         virtual void execute(Mediator* mediator);
