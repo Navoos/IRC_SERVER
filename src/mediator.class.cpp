@@ -215,18 +215,32 @@ void Mediator::part_cmd(Client *client, std::vector<std::string> __cmd) {
     }
     else {
         cmd_helper = split(__cmd[1], ',');
+        if (cmd_helper.empty()){
+            std::cout << "cmd_helper is empty" << std::endl;
+            return ;
+        }
         int i = 0;
+        std::string __error;
+        std::string __message;
+        std::string __reason;
+        char        __hostname[256];
+        if (gethostname(__hostname, sizeof(__hostname)) == -1) {
+            perror("gethostname:");
+        }
+        for (std::vector<std::string>::iterator it_reason = __cmd.begin() + 2; it_reason != __cmd.end(); ++it_reason)
+            __reason += *it_reason + " ";
         for (std::vector<std::string>::iterator it = cmd_helper.begin(); it != cmd_helper.end(); ++it, ++i) {
-            if (cmd_helper[i].empty())
+            if (cmd_helper[i].empty()) {
                 break;
+            }
             if (cmd_helper[i][0] != '#') {
                 client->put_message(ERR_BADCHANMASK, ":Bad channel mask");
                 return ;
             }
             else {
                 if (cmd_helper[i][1] == '\0') {
-                    std::string error = ":" + client->get_nickname() + " 480 * you need name of channel\n";
-                    if (send(client->get_socket(), error.c_str(), error.size(), 0) == -1)
+                    __error = ":" + client->get_nickname() + " 480 * you need name of channel\n";
+                    if (send(client->get_socket(), __error.c_str(), __error.size(), 0) == -1)
                         perror("send:");
                     return ;
                 }
@@ -236,14 +250,29 @@ void Mediator::part_cmd(Client *client, std::vector<std::string> __cmd) {
                 }
                 if (client->__channels.find(*it) != client->__channels.end()) {
                     Channel *channel = client->get_channel(*it);
-                    for (std::map<int, Client*>::iterator it1 = channel->get_all_client().begin(); it1 != channel->get_all_client().end(); ++it1)
-                        it1->second->put_message("340", ":leave channel");
+                    for (std::map<int, Client*>::iterator it1 = channel->get_all_client().begin(); it1 != channel->get_all_client().end(); ++it1){
+                        if (__reason.size() == 0) { 
+                            __message = ":" + it1->second->get_nickname() + "@" + __hostname + " PART " + cmd_helper[i] + "    ; " + "someone" + " is leaving the channel " + cmd_helper[i] + "\n";
+                            if (send(it1->second->get_socket(), __message.c_str(), __message.size(), 0) == -1) {
+                                perror("send:");
+                                return ;
+                            }
+                        }
+                        else {
+                            __message = ":" + it1->second->get_nickname() + "@" + __hostname + " PART " + cmd_helper[i] + "    ; " + "someone" + " is leaving the channel " + cmd_helper[i] + " for " + __reason + "\n";
+                            if (send(client->get_socket(), __message.c_str(), __message.size(), 0) == -1) {
+                                perror("send:");
+                                return ;
+                            }
+                        }
+                    }
                     this->__channels.at(*it)->delete_client(client->get_socket());
                     channel->delete_moderator(client->get_socket());
                     client->__channels.erase(*it);
-                    for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); ++it_client)
+                    for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); ++it_client) {
                         if (channel->get_all_client().size() > 0 && channel->get_moderators().size() == 0)
                             channel->add_moderator(it_client->second->get_socket());
+                    }
                 } else {
                     client->put_message(ERR_NOTONCHANNEL, ":You're not on that channel");
                     return ;
@@ -252,6 +281,10 @@ void Mediator::part_cmd(Client *client, std::vector<std::string> __cmd) {
         }
     }
 }
+
+// void Mediator::kick_cmd(Client *client, Channel *channel) {
+
+// }
 
 bool    Mediator::search_channel(std::string name, std::map<std::string, Channel*>     __channels){
     if (__channels.find(name) == __channels.end()) {

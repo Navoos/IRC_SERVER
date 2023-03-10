@@ -50,6 +50,7 @@ void Server::run() {
 		  if (client_fd < 0) {
 			perror("accept");
 		  } else {
+			fcntl(client_fd, F_SETFL, O_NONBLOCK);
 			++fd_count;
 			struct pollfd n;
 			n.fd = client_fd;
