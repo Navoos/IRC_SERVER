@@ -74,6 +74,12 @@ bool Channel::is_invited(int client_id) {
     }
 }
 
-std::map<int, Client*> Channel::get_all_client() {
+std::map<int, Client*>& Channel::get_all_client() {
     return this->__clients;
+}
+
+void Channel::delete_client(int client_fd) {
+    if (this->__clients.find(client_fd) != this->__clients.end()) {
+        this->__clients.erase(client_fd);
+    }
 }
