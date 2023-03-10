@@ -37,6 +37,7 @@ public:
     bool    find_operator(int client);
     void    delete_client(int client_fd); 
     void    delete_moderator(int moderator);
+    std::set<int> get_moderators();
     std::map<int, Client*>& get_all_client();
 };
 

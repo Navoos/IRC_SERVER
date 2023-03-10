@@ -88,3 +88,7 @@ void Channel::delete_moderator(int moderator) {
     if (this->__moderators.find(moderator) != this->__moderators.end())
         this->__moderators.erase(moderator);
 }
+
+std::set<int> Channel::get_moderators() {
+    return (this->__moderators);
+}

@@ -241,11 +241,9 @@ void Mediator::part_cmd(Client *client, std::vector<std::string> __cmd) {
                     this->__channels.at(*it)->delete_client(client->get_socket());
                     channel->delete_moderator(client->get_socket());
                     client->__channels.erase(*it);
-                    for (std::vector<std::string>::iterator it2 = cmd_helper.begin(); it2 != cmd_helper.end(); ++it2)
-                        if (client->__channels.find(*it2) != client->__channels.end()) {
-                            channel->add_moderator(client->get_socket());
-                            break ;
-                        }
+                    for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); ++it_client)
+                        if (channel->get_all_client().size() > 0 && channel->get_moderators().size() == 0)
+                            channel->add_moderator(it_client->second->get_socket());
                 } else {
                     client->put_message("343434", ":the client is not in the channel");
                     return ;
