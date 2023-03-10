@@ -225,13 +225,13 @@ void Mediator::part_cmd(Client *client, std::vector<std::string> __cmd) {
             }
             else {
                 if (cmd_helper[i][1] == '\0') {
-                    std::string error = ":" + client->get_nickname() + " 580 * enter the name of channel\n";
+                    std::string error = ":" + client->get_nickname() + " 480 * you need name of channel\n";
                     if (send(client->get_socket(), error.c_str(), error.size(), 0) == -1)
                         perror("send:");
                     return ;
                 }
                 if (this->__channels.find(*it) == this->__channels.end()) {
-                    client->put_message("403", ":No such channel");
+                    client->put_message(ERR_NOSUCHCHANNEL, ":No such channel");
                     return ;
                 }
                 if (client->__channels.find(*it) != client->__channels.end()) {
@@ -245,7 +245,7 @@ void Mediator::part_cmd(Client *client, std::vector<std::string> __cmd) {
                         if (channel->get_all_client().size() > 0 && channel->get_moderators().size() == 0)
                             channel->add_moderator(it_client->second->get_socket());
                 } else {
-                    client->put_message("343434", ":the client is not in the channel");
+                    client->put_message(ERR_NOTONCHANNEL, ":You're not on that channel");
                     return ;
                 }
             }
