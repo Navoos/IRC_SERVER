@@ -169,6 +169,7 @@ void Mediator::join_cmd(Client *client){
             channel->add_client(client);
             client->subscribe_to_channel(channel);
             this->__channels.insert(std::make_pair(*it, channel));
+            client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
         } else {
             Channel *channel = this->__channels.at(*it);
             if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
@@ -189,6 +190,7 @@ void Mediator::join_cmd(Client *client){
                         if (keys[j] == channel->get_key()) {
                                 channel->add_client(client);
                                 client->subscribe_to_channel(channel);
+                                client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
                         } else {
                             client->put_message(":ft_irc 475 " + client->get_nickname() + " " + channel->get_name() + " :Cannot join channel (+k)");
                             // client->put_message(ERR_BADCHANNELKEY, channel->get_name() + " " + ":Cannot join channel (+k)");
@@ -203,6 +205,7 @@ void Mediator::join_cmd(Client *client){
                         if (!keys.empty() && j < (int)keys.size() && keys[j] == channel->get_key()) {
                                 channel->add_client(client);
                                 client->subscribe_to_channel(channel);
+                                client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
                         } else {
                             client->put_message(":ft_irc 475 " + client->get_nickname() + " " + channel->get_name() + " :Cannot join channel (+k)");
                             // client->put_message(ERR_BADCHANNELKEY, channel->get_name() + " " + ":Cannot join channel (+k)");
@@ -210,6 +213,7 @@ void Mediator::join_cmd(Client *client){
                         } else {
                             channel->add_client(client);
                             client->subscribe_to_channel(channel);
+                            client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
                 }
             }
         }
