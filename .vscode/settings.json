@@ -4,8 +4,11 @@
         "vector": "cpp",
         "map": "cpp",
 <<<<<<< HEAD
+<<<<<<< HEAD
         "algorithm": "cpp"
 =======
+=======
+>>>>>>> 7a26c02f8d1dde2eef8383047396b66f84170c7e
         "algorithm": "cpp",
         "__bit_reference": "cpp",
         "__config": "cpp",
@@ -67,6 +70,9 @@
         "typeinfo": "cpp",
         "unordered_map": "cpp",
         "utility": "cpp"
+<<<<<<< HEAD
 >>>>>>> 4699a916431d448729bacd18d454b8fc45015398
+=======
+>>>>>>> 7a26c02f8d1dde2eef8383047396b66f84170c7e
     }
 }

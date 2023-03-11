@@ -75,6 +75,7 @@ bool Channel::is_invited(int client_id) {
 }
 
 std::map<int, Client*>& Channel::get_all_client() {
+std::map<int, Client*>& Channel::get_all_client() {
     return this->__clients;
 }
 
@@ -101,4 +102,35 @@ bool Channel::find_client(std::string &nick_name) {
         }
     }
     return false;
+}
+
+void Channel::delete_client(int client_fd) {
+    if (this->__clients.find(client_fd) != this->__clients.end()) {
+        this->__clients.erase(client_fd);
+    }
+}
+
+void Channel::delete_moderator(int moderator) {
+    if (this->__moderators.find(moderator) != this->__moderators.end())
+        this->__moderators.erase(moderator);
+}
+
+std::set<int> Channel::get_moderators() {
+    return (this->__moderators);
+}
+
+bool Channel::find_client(std::string &nick_name) {
+    std::map<int, Client*>::iterator it;
+    for (it = this->__clients.begin(); it != this->__clients.end(); ++it) {
+        if (it->second->get_nickname() == nick_name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Channel::delete_client(int client_fd) {
+    if (this->__clients.find(client_fd) != this->__clients.end()) {
+        this->__clients.erase(client_fd);
+    }
 }

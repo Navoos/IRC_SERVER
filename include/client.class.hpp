@@ -7,25 +7,26 @@
 #include "mediator.class.hpp"
 
 class Client {
-  private:
-    std::vector<std::string> __cmd;
-    std::string             &__server_password;
-    std::map<std::string, Channel*> __channels;
+	private:
+		std::vector<std::string> __cmd;
+		std::string             &__server_password;
+		std::map<std::string, Channel*> __channels;
 	std::string   __buffer;
-	  int           __fd;
-    Mediator *__mediator;
-    friend class Mediator;
+		int           __fd;
+		Mediator *__mediator;
+		friend class Mediator;
 
-    bool    __connected;
-    bool    __accepted;
+		bool    __connected;
+		bool    __accepted;
 
 	std::string				__nick;
 	std::string				__user;
+	
 	public:
 		Client(int fd, std::string &password, Mediator *mediator);
 		bool    is_connected();
 		bool    is_accepted(); 
-		bool    put_message(std::string name, std::string message);
+		bool    put_message(std::string message);
 		void    update_client(std::string &str);
 		void    set_accepted(bool acc);
 		void    set_connected(bool connected);
