@@ -231,38 +231,42 @@ std::map<std::string, Channel*> Mediator::get_channels() {
 }
 
 void Mediator::part_cmd(Client *client) {
-    std::vector<std::string> __channels = std::vector<std::string>();
+    std::vector<std::string>    __channels = std::vector<std::string>();
+    std::string                 __error;
+    std::string                 __message;
+    std::string                 __reason;
+    char                        __hostname[256];
+
     if (client->__cmd.size() < 2) {
-        client->put_message(ERR_NEEDMOREPARAMS, "PART :Not enough parameters");
+        __error = ":ft_irc 461 " + client->get_nickname() + " PART :Not enough parameters";
+        client->put_message(__error);
         return ;
     } else {
         __channels = split(client->__cmd[1], ',');
         if (__channels.size() == 0) {
-            client->put_message("000", "PART :you should write at least one channel");
+            __error = ":ft_irc 000 " + client->get_nickname() + " PART :you should write at least one channel";
+            client->put_message(__error);
             return ;
         }
         int i = 0;
-        std::string __error;
-        std::string __message;
-        std::string __reason;
-        char        __hostname[256];
         if (gethostname(__hostname, sizeof(__hostname)) == -1)
             perror("gethostname:");
         for (std::vector<std::string>::iterator it_reason = client->__cmd.begin() + 2; it_reason != client->__cmd.end(); ++it_reason)
             __reason += *it_reason + " ";
         for (std::vector<std::string>::iterator it = __channels.begin(); it != __channels.end(); ++it, ++i) {
             if (__channels[i][0] != '#') {
-                client->put_message(ERR_BADCHANMASK, "PART :Bad channel mask");
+                __error = ":ft_irc 476 " + client->get_nickname() + " PART :Bad channel mask";
+                client->put_message(__error);
                 continue ;
             } else {
                 if (__channels[i][1] == '\0') {
-                    __error = ":" + client->get_nickname() + " 480 * you need name of channel\n";
-                    if (send(client->get_socket(), __error.c_str(), __error.size(), 0) == -1)
-                        perror("send:");
+                    __error = ":ft_irc 002 " + client->get_nickname() + " PART :you need name of channel";
+                    client->put_message(__error);
                     continue ;
                 }
                 if (this->__channels.find(*it) == this->__channels.end()) {
-                    client->put_message(ERR_NOSUCHCHANNEL, "PART :No such channel");
+                    __error = ":ft_irc 403 " + client->get_nickname() + " PART :No such channel";
+                    client->put_message(__error);
                     continue ;
                 }
                 if (client->__channels.find(*it) != client->__channels.end()) {
@@ -270,16 +274,12 @@ void Mediator::part_cmd(Client *client) {
                     for (std::map<int, Client*>::iterator it1 = channel->get_all_client().begin(); it1 != channel->get_all_client().end(); ++it1){
                         if (__reason.size() == 0) { 
                             __message = ":" + it1->second->get_nickname() + "@" + __hostname + " PART " + __channels[i] + "    ; " + "someone" + " is leaving the channel " + __channels[i] + "\n";
-                            if (send(it1->second->get_socket(), __message.c_str(), __message.size(), 0) == -1) {
-                                perror("send:");
-                                continue ;
-                            }
+                            client->put_message(__message);
+                            continue ;
                         } else {
                             __message = ":" + it1->second->get_nickname() + "@" + __hostname + " PART " + __channels[i] + "    ; " + "someone" + " is leaving the channel " + __channels[i] + " for " + __reason + "\n";
-                            if (send(it1->second->get_socket(), __message.c_str(), __message.size(), 0) == -1) {
-                                perror("send:");
-                                continue ;
-                            }
+                            client->put_message(__message);
+                            continue ;
                         }
                     }
                     this->__channels.at(*it)->delete_client(client->get_socket());
@@ -290,7 +290,8 @@ void Mediator::part_cmd(Client *client) {
                             channel->add_moderator(it_client->second->get_socket());
                     }
                 } else {
-                    client->put_message(ERR_NOTONCHANNEL, "PART :You're not on that channel");
+                    __error = ":ft_irc 441 " + client->get_nickname() + " PART :They aren't on that channel";
+                    client->put_message(__error);
                     continue ;
                 }
             }
@@ -299,26 +300,30 @@ void Mediator::part_cmd(Client *client) {
 }
 
 void Mediator::kick_cmd(Client *client) {
-    std::vector<std::string> __channels = std::vector<std::string>();
-    std::vector<std::string> __clients = std::vector<std::string>();
+    std::vector<std::string>    __channels = std::vector<std::string>();
+    std::vector<std::string>    __clients = std::vector<std::string>();
+    std::string                 __comment;
+    std::string                 __error;
+    char                        __hostname[256];
+
     if (client->__cmd.size() < 3){
-        client->put_message(ERR_NEEDMOREPARAMS, "KICK :Not enough parameters");
+        __error = ":ft_irc 461 " + client->get_nickname() + " KICK :Not enough parameters";
+        client->put_message(__error);
         return ;
     } else {
-        char        __hostname[256];
-        std::string __comment;
-        std::string __error;
         int         i = 0;
         if (gethostname(__hostname, sizeof(__hostname)) == -1)
             perror("gethostname");
         __channels = split(client->__cmd[1], ',');
         __clients = split(client->__cmd[2], ',');
         if (__channels.size() == 0) {
-            client->put_message("001", "KICK :you should write at least one channel");
+            __error = ":ft_irc 000 " + client->get_nickname() + " KICK :you should write at least one channel";
+            client->put_message(__error);
             return ;
         }
         if (__clients.size() == 0) {
-            client->put_message("002", "KICK :you should write at least one user");
+            __error = ":ft_irc 001 " + client->get_nickname() + " KICK :you should write at least one user";
+            client->put_message(__error);
             return ;
         }
         for(std::vector<std::string>::iterator it_comment = client->__cmd.begin() + 3; it_comment != client->__cmd.end(); ++it_comment)
@@ -326,24 +331,31 @@ void Mediator::kick_cmd(Client *client) {
         for (std::vector<std::string>::iterator it = __channels.begin(); it != __channels.end(); ++it, ++i) {
             //TODO: parse channels
             if (__channels[i][0] != '#') {
-                client->put_message(ERR_BADCHANMASK, "PART :Bad channel mask");
+                __error = ":ft_irc 476 " + client->get_nickname() + " KICK :Bad channel mask";
+                client->put_message(__error);
                 continue ;
             } else {
                 if (__channels[i][1] == '\0') {
-                    __error = ":" + client->get_nickname() + " 480 * you need name of channel\n";
-                    if (send(client->get_socket(), __error.c_str(), __error.size(), 0) == -1)
-                        perror("send:");
+                    __error = ":ft_irc 002 " + client->get_nickname() + " KICK :you need name of channel";
+                    client->put_message(__error);
                     continue ;
                 }
                 if (this->__channels.find(*it) != this->__channels.end()) {
                     Channel *channel = client->get_channel(*it);
                     if (channel->find_operator(client->get_socket())) {
                         for(std::vector<std::string>::iterator it_clients = __clients.begin(); it_clients != __clients.end(); ++it_clients) {
-                            std::cout << *it_clients << std::endl;
+                            if (channel->find_client(*it_clients)) {
+                                client->put_message("the client is inside of channel");
+                            } else {
+                                __error = ":ft_irc 441 " + client->get_nickname() + " KICK :They aren't on that channel";
+                                client->put_message(__error);
+                                continue ;
+                            }
                         }
                     }
                 } else {
-                    client->put_message(ERR_NOSUCHCHANNEL, "PART :No such channel");
+                    __error = ":ft_irc 403 " + client->get_nickname() + " KICK :No such channel";
+                    client->put_message(__error);
                     continue ;
                 }
             }
