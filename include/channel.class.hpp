@@ -34,6 +34,7 @@ public:
     void    add_client(Client *client);
     bool    is_invited(int client_id);
     bool    find_client(int client_id);
+    bool    find_client(std::string &nick_name);
     bool    find_operator(int client);
     void    delete_client(int client_fd); 
     void    delete_moderator(int moderator);

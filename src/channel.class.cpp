@@ -92,3 +92,13 @@ void Channel::delete_moderator(int moderator) {
 std::set<int> Channel::get_moderators() {
     return (this->__moderators);
 }
+
+bool Channel::find_client(std::string &nick_name) {
+    std::map<int, Client*>::iterator it;
+    for (it = this->__clients.begin(); it != this->__clients.end(); ++it) {
+        if (it->second->get_nickname() == nick_name) {
+            return true;
+        }
+    }
+    return false;
+}
