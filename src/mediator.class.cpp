@@ -438,30 +438,20 @@ bool Mediator::find_client(std::string &nick_name) {
     return false;
 }
 
-#include <sys/socket.h>
 void Mediator::invite_cmd(Client *client) {
     if (client->__cmd.size() < 3) {
         std::string msg = ":ft_irc 341 " + client->get_nickname() + " :Not enough parameters\r\n";
-        if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-            perror("send");
-            return ;
-        }
+        client->put_message(msg);
         return ;
     }
     if (this->__channels.find(client->__cmd[2]) == this->__channels.end()) {
         std::string msg = ":ft_irc 403 " + client->get_nickname() + " " + client->__cmd[2] + " :No such channel\r\n";
-        if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-            perror("send");
-            return ;
-        }
+        client->put_message(msg);
         return ;
     }
     if (!this->find_client(client->__cmd[1])) {
         std::string msg = ":ft_irc 401 " + client->get_nickname() + " " + client->__cmd[1] + " :No such nick\r\n";
-        if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-            perror("send");
-            return ;
-        }
+        client->put_message(msg);
         return ;
     }
     Channel *invite_channel = this->__channels.at(client->__cmd[2]);
@@ -472,25 +462,16 @@ void Mediator::invite_cmd(Client *client) {
         if (invite_channel->find_operator(client->get_socket())) {
             if (invite_channel->is_invited(this->get_client(client->__cmd[1])->get_socket())) {
                 std::string msg = ":ft_irc 555 " + client->get_nickname() + " " + client->__cmd[1] + " " + client->__cmd[2] + " :is already invited\r\n";
-                if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-                    perror("send");
-                    return ;
-                }
+                client->put_message(msg);
                 return ;
             }
             if (invite_channel->find_client(client->__cmd[1])) {
                 std::string msg = ":ft_irc 443 " + client->get_nickname() + " " + client->__cmd[1] + " " + client->__cmd[2] + " :is already on channel\r\n";
-                if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-                    perror("send");
-                    return ;
-                }
+                client->put_message(msg);
                 return ;
             } else {
                 std::string msg = ":ft_irc 341 " + client->get_nickname() + " " + client->__cmd[1] + " " + client->__cmd[2] + "\r\n";
-                if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-                    perror("send");
-                    return ;
-                }
+                client->put_message(msg);
                 msg = ":" + client->get_nickname() + " " + "INVITE " + client->get_nickname() + " " + client->__cmd[2] + "\r\n";
                 Client *invited_client = this->get_client(client->__cmd[1]);
                 if (!invited_client) {
@@ -501,46 +482,30 @@ void Mediator::invite_cmd(Client *client) {
                     return ;
                 }
                 return ;
-                // invite the nick
             }
         } else {
             std::string msg = ":ft_irc 482" + client->get_nickname() + " " + client->__cmd[2] + " :You're not channel operator\r\n";
-            if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-                perror("send");
-                return ;
-            }
+            client->put_message(msg);
             return ;
         }
     } else {
         if (!invite_channel->find_client(client->get_socket())) {
             std::string msg = ":ft_irc 442 " + client->get_nickname() + " " + client->__cmd[2] + " :You're not on that channel\r\n";
-            if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-                perror("send");
-                return ;
-            }
+            client->put_message(msg);
             return;
         }
         if (invite_channel->find_client(client->__cmd[1])) {
             std::string msg = ":ft_irc 443 " + client->get_nickname() + " " + client->__cmd[1] + " " + client->__cmd[2] + " :is already on channel\r\n";
-            if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-                perror("send");
-                return ;
-            }
+            client->put_message(msg);
             return ;
         } else {
             if (invite_channel->is_invited(this->get_client(client->__cmd[1])->get_socket())) {
                 std::string msg = ":ft_irc 555 " + client->get_nickname() + " " + client->__cmd[1] + " " + client->__cmd[2] + " :is already invited\r\n";
-                if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-                    perror("send");
-                    return ;
-                }
+                client->put_message(msg);
                 return ;
             }
             std::string msg = ":ft_irc 341 " + client->get_nickname() + " " + client->__cmd[1] + " " + client->__cmd[2] + "\r\n";
-            if (send(client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
-                perror("send");
-                return ;
-            }
+            client->put_message(msg);
             msg = ":" + client->get_nickname() + " " + "INVITE " + client->get_nickname() + " " + client->__cmd[2] + "\r\n";
             Client *invited_client = this->get_client(client->__cmd[1]);
             if (!invited_client) {
@@ -551,7 +516,6 @@ void Mediator::invite_cmd(Client *client) {
                 return ;
             }
             return ;
-            // invite the nick
         }
     }
 }
