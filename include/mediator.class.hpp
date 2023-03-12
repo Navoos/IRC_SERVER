@@ -32,11 +32,11 @@ class Mediator {
       void  join_cmd(Client *client);   // houssam
       // deadpool
         // std::vector<std::string> split(const std::string& input, const std::string& delimiter);
-        void part_cmd(Client *client, std::vector<std::string> __cmd);
+        void part_cmd(Client *client);
         std::map<std::string, Channel*> get_channels();
     //   void  part_cmd(Client *client, Channel *channel);   //ayoub
       void  mode_cmd(Client *client, Channel *channel);   //ayoub
-      void  kick_cmd(Client *client, Channel *channel);   //ayoub
+      void  kick_cmd(Client *client);   //ayoub
       void  quit_cmd(Client *client);   //ayoub
       void  topic_cmd(Client *client);
       void  delete_client(int fd);
