@@ -12,6 +12,7 @@ Channel::~Channel(){};
 std::string    Channel::get_name(void) const{
     return __name;
 }
+
 std::string Channel::get_key(void) const{
     return __key;
 }
@@ -101,4 +102,15 @@ bool Channel::find_client(std::string &nick_name) {
         }
     }
     return false;
+}
+
+//deadpool
+
+int Channel::get_client(std::string nick_name) {
+    for (std::map<int, Client*>::iterator it = this->__clients.begin(); it != this->__clients.end(); ++it) {
+        if (it->second->get_nickname() == nick_name) {
+            return (it->second->get_socket());
+        }
+    }
+    return 0;
 }

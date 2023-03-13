@@ -40,6 +40,8 @@ public:
     void    delete_moderator(int moderator);
     std::set<int> get_moderators();
     std::map<int, Client*>& get_all_client();
+    //deadpool
+    int get_client(std::string nick);
 };
 
 #endif

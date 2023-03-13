@@ -108,6 +108,12 @@ Channel* Client::get_channel(std::string &name) {
     }
 }
 
+void Client::erase_channel(std::string &channel)
+{
+    if (this->__channels.find(channel) != this->__channels.end())
+        this->__channels.erase(channel);
+}
+
 
 void   Client::execute(Mediator *mediator){
     if (__cmd[0] == "PASS" || __cmd[0] == "pass")

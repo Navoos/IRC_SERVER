@@ -36,6 +36,7 @@ class Client {
     	void    		subscribe_to_channel(Channel *channel);
     	int				get_socket(void) const;
     	Channel*    	get_channel(std::string &name);
+		void			erase_channel(std::string &channel);
 };
 
 #endif
