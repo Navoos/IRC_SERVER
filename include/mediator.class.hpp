@@ -30,6 +30,7 @@ class Mediator {
       void  user_cmd(Client *client);   // houssam
       void  nick_cmd(Client *client);   // houssam
       void  join_cmd(Client *client);   // houssam
+      void  notice_cmd(Client *client);
       // deadpool
         // std::vector<std::string> split(const std::string& input, const std::string& delimiter);
         void part_cmd(Client *client);

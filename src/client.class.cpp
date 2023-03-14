@@ -135,6 +135,6 @@ void   Client::execute(Mediator *mediator){
     if (__cmd[0] == "privmsg" || __cmd[0] == "PRIVMSG")
         mediator->privmsg_cmd(this);
     // //deadpool
-    // if (__cmd[0] == "PART" || __cmd[0] == "part")
-    //     mediator->part_cmd(this, __cmd);
+    if (__cmd[0] == "NOTICE" || __cmd[0] == "notice")
+        mediator->notice_cmd(this);
 }
