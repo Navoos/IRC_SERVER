@@ -22,13 +22,11 @@ static bool valid_name(std::string nickname){
 void Mediator::pass_cmd(Client *client, Server server) {
     if (client->is_connected()) {
         client->put_message(":ft_irc 462 " + client->get_nickname() +" :You may not reregister");
-        // client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
         return;
     }
 
     if (client->__cmd.size() != 2) {
         client->put_message(":ft_irc 461 " + client->get_nickname() +" :Not enough parameters");
-        // client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
         return;
     }
     if (client->__cmd[1] == server.get_password()) {
@@ -36,7 +34,6 @@ void Mediator::pass_cmd(Client *client, Server server) {
     }
     else {
         client->put_message(":ft_irc 464 " + client->get_nickname() +" :Password incorrect");
-        // client->put_message(ERR_PASSWDMISMATCH, ":Password incorrect");
         return; 
     }
     client->check_connection();
@@ -60,27 +57,23 @@ void Mediator::user_cmd(Client *client){
 void    Mediator::nick_cmd(Client *client){
     if (client->is_connected()){
         client->put_message(":ft_irc 018 " + client->get_nickname() +" :Your connection is restricted!");
-        // client->put_message(ERR_RESTRICTED, ":Your connection is restricted!");
         return;
     }
 
 	if (client->__cmd.size() != 2 || client->__cmd[1].length() == 0)
     {
         client->put_message(":ft_irc 431 " + client->get_nickname() +" :Not given nickname");
-		// client->put_message(ERR_NONICKNAMEGIVEN, ":Not given nickname");
         return;
     }
 
     if (!valid_name(client->__cmd[1])){
         client->put_message(":ft_irc 432 " + client->get_nickname() +" :Erroneus nickname");
-        // client->put_message(ERR_ERRONEUSNICKNAME, ":Erroneus nickname");
         return;
     } else {
         
         for (std::map<int,Client *>::iterator it = this->__clients.begin(); it != this->__clients.end(); ++it) {
             if (it->second->get_nickname() == client->__cmd[1]) {
                 client->put_message(":ft_irc 433 " + client->get_nickname() +" :Nickname is already in use");
-                // client->put_message(ERR_NICKNAMEINUSE, ":Nickname is already in use");
                 return;
             }
         }
@@ -148,11 +141,6 @@ void Mediator::join_cmd(Client *client){
         }else {
             if(it->size() == 1){
                 client->put_message(":ft_irc 480 " + client->get_nickname() +" :you need name of channel");
-            // std::string string = ":" + client->get_nickname() + " 480 * you need name of channel\n";
-            //     if (send(client->get_socket(), string.c_str(), string.size(), 0) == -1){
-            //         perror ("send:");
-            //         return ;
-            //     }
                 return ;
             }
         }
@@ -180,11 +168,6 @@ void Mediator::join_cmd(Client *client){
             }
             if (channel->find_client(client->get_socket())) {
                 client->put_message(":ft_irc 480 " + client->get_nickname() +" :is already on channel");
-                // std::string string = ":" + client->get_nickname() + " 443 * is already on channel\n";
-                // if (send(client->get_socket(), string.c_str(), string.size(), 0) == -1){
-                //     perror ("send:");
-                //     return ;
-                // }
                 return ;
             }
             if (channel->get_mode()) {
@@ -196,12 +179,10 @@ void Mediator::join_cmd(Client *client){
                                 client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
                         } else {
                             client->put_message(":ft_irc 475 " + client->get_nickname() + " " + channel->get_name() + " :Cannot join channel (+k)");
-                            // client->put_message(ERR_BADCHANNELKEY, channel->get_name() + " " + ":Cannot join channel (+k)");
                         }
                     }
                 } else {
                     client->put_message(":ft_irc 473 " + client->get_nickname() + " " + channel->get_name() + " :Cannot join channel (+i)");
-                    // client->put_message(ERR_INVITEONLYCHAN, channel->get_name() + " " + ":Cannot join channel (+i)");
                 }
             } else {
                     if (!channel->get_key().empty()) {
@@ -211,7 +192,6 @@ void Mediator::join_cmd(Client *client){
                                 client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
                         } else {
                             client->put_message(":ft_irc 475 " + client->get_nickname() + " " + channel->get_name() + " :Cannot join channel (+k)");
-                            // client->put_message(ERR_BADCHANNELKEY, channel->get_name() + " " + ":Cannot join channel (+k)");
                         }
                         } else {
                             channel->add_client(client);
@@ -294,23 +274,16 @@ void    Mediator::topic_cmd(Client *client){
         }
         if(client->__cmd[1].size() == 1){
             client->put_message(":ft_irc 480 " + client->get_nickname() +" :you need name of channel");
-            // std::string string = ":" + client->get_nickname() + " 480 * you need name of channel\n";
-            //     if (send(client->get_socket(), string.c_str(), string.size(), 0) == -1){
-            //         perror ("send:");
-            //         return ;
-            //     }
             return ;
         }
         if (!search_channel(client->__cmd[1], this->__channels)){
             client->put_message(":ft_irc 403 " + client->get_nickname() + " :No such channel");
-            // client->put_message(ERR_NOSUCHCHANNEL, ":No such channel");
             return;
         }else{
             Channel *channel = NULL;
             channel = client->get_channel(client->__cmd[1]);
             if (channel == NULL) {
                 client->put_message(":ft_irc 442 " + client->get_nickname() + " :You're not on that channel");
-                // client->put_message(ERR_NOTONCHANNEL, ":You're not on that channel");
                 return;   
             }
             if (!channel->find_operator(client->get_socket())){
