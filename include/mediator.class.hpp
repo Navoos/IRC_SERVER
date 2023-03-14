@@ -40,6 +40,7 @@ class Mediator {
       void  quit_cmd(Client *client);   //ayoub
       void  topic_cmd(Client *client);
       void  invite_cmd(Client *client);
+      void  privmsg_cmd(Client *client);
       void  delete_client(int fd);
       Client*   get_client(std::string &nick_name);
       bool  find_client(int fd);
