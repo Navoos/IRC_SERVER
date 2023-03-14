@@ -32,6 +32,7 @@ int			Client::get_socket(void) const { return __fd; }
 Client::Client(int fd, std::string &server_password, Mediator *mediator) : __server_password(server_password), __fd(fd), __mediator(mediator) {
     this->__connected = false;
     this->__accepted = false;
+    this->__voice = false;
 }
 
 void    Client::update_client(std::string &str) {
@@ -60,6 +61,10 @@ void    Client::update_client(std::string &str) {
         this->__buffer.erase(0, pos + 1);
         pos = this->__buffer.find("\n");
     }
+}
+
+bool Client::has_voice() {
+    return this->__voice;
 }
 
 bool  Client::put_message(std::string message)
@@ -118,8 +123,17 @@ void   Client::execute(Mediator *mediator){
         mediator->nick_cmd(this);
     if (__cmd[0] == "JOIN" || __cmd[0] == "join")
         mediator->join_cmd(this);
+    //deadpool
+    if (__cmd[0] == "PART" || __cmd[0] == "part")
+        mediator->part_cmd(this);
+    if (__cmd[0] == "KICK" || __cmd[0] == "kick")
+        mediator->kick_cmd(this);
     if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
         mediator->topic_cmd(this);
+    if (__cmd[0] == "invite" || __cmd[0] == "INVITE")
+        mediator->invite_cmd(this);
+    if (__cmd[0] == "privmsg" || __cmd[0] == "PRIVMSG")
+        mediator->privmsg_cmd(this);
     // //deadpool
     // if (__cmd[0] == "PART" || __cmd[0] == "part")
     //     mediator->part_cmd(this, __cmd);
