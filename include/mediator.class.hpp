@@ -24,36 +24,36 @@ class Client;
 class Server;
 
 class Mediator {
-  public:
-      Server get_server();
-      void pass_cmd(Client *client, Server server);   // houssam
-      void  user_cmd(Client *client);   // houssam
-      void  nick_cmd(Client *client);   // houssam
-      void  join_cmd(Client *client);   // houssam
+    public:
+        Server get_server();
+        void pass_cmd(Client *client, Server server);   // houssam
+        void  user_cmd(Client *client);   // houssam
+        void  nick_cmd(Client *client);   // houssam
+        void  join_cmd(Client *client);   // houssam
       // deadpool
         // std::vector<std::string> split(const std::string& input, const std::string& delimiter);
         void part_cmd(Client *client);
         std::map<std::string, Channel*> get_channels();
     //   void  part_cmd(Client *client, Channel *channel);   //ayoub
-      void  mode_cmd(Client *client, Channel *channel);   //ayoub
-      void  kick_cmd(Client *client);   //ayoub
-      void  quit_cmd(Client *client);   //ayoub
-      void  topic_cmd(Client *client);
-      void  invite_cmd(Client *client);
-      void  delete_client(int fd);
-      Client*   get_client(std::string &nick_name);
-      bool  find_client(int fd);
-      bool  find_client(std::string &nick_name);
-      void  set_client(int fd, std::string &buffer);
-      void  add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator);
-      bool  search_channel(std::string name, std::map<std::string, Channel*>     __channels);
-      // todo: add invit command
-      // todo: add topic command
-      // HOUSSAM: add additional commands here
-      Mediator(Server& server);
-  private:
-      std::map<int, Client*>            __clients;
-      std::map<std::string, Channel*>   __channels;
-      Server                            __server;
+        void  mode_cmd(Client *client);   //ayoub
+        void  kick_cmd(Client *client);   //ayoub
+        void  quit_cmd(Client *client);   //ayoub
+        void  topic_cmd(Client *client);
+        void  invite_cmd(Client *client);
+        void  delete_client(int fd);
+        Client*   get_client(std::string &nick_name);
+        bool  find_client(int fd);
+        bool  find_client(std::string &nick_name);
+        void  set_client(int fd, std::string &buffer);
+        void  add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator);
+        bool  search_channel(std::string name, std::map<std::string, Channel*>     __channels);
+        // todo: add invit command
+        // todo: add topic command
+        // HOUSSAM: add additional commands here
+        Mediator(Server& server);
+    private:
+        std::map<int, Client*>            __clients;
+        std::map<std::string, Channel*>   __channels;
+        Server                            __server;
 };
 #endif

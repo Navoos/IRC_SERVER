@@ -159,13 +159,13 @@ void Mediator::join_cmd(Client *client){
         }
         if (this->__channels.find(*it) == this->__channels.end()) {
             Channel *channel = NULL;
-
             if (!keys.empty() && j < (int)keys.size()) {
                 channel = new Channel(*it, "", keys[j]);
                 channel->set_key(keys[j]);
-
             } else
                 channel = new Channel(*it, "", "");
+            channel->set_modeinvite(false); // add this two lines for testing
+            channel->set_modetopic(false); // add this two lines for testing
             channel->add_moderator(client->get_socket());
             channel->add_client(client);
             client->subscribe_to_channel(channel);
@@ -410,6 +410,95 @@ void Mediator::kick_cmd(Client *client) {
                     continue ;
                 }
             }
+        }
+    }
+}
+
+void    Mediator::mode_cmd(Client *client) {
+    std::string     error;
+    std::string     message;
+    std::string     modestring;
+    std::string     key;
+    std::string     target;
+
+    if (client->__cmd.size() < 3) {
+        error = ":ft_irc 461 " + client->get_nickname() + " MODE :Not enough parameters.";
+        client->put_message(error);
+        return ;
+    }
+    target = client->__cmd[1];
+    modestring = client->__cmd[2];
+    if (client->__cmd.size() == 4)
+        key = client->__cmd[3];
+    if (client->__cmd[1][0] == '#') {
+        if (!this->search_channel(target, this->__channels)) {
+            error = ":ft_irc 403 " + client->get_nickname() + " " + client->__cmd[1] + " :No such channel.";
+            client->put_message(error);
+            return ;
+        }
+        Channel *channel = client->get_channel(client->__cmd[1]);
+        if (!channel) {
+            error = ":ft_irc 442 " + client->get_nickname() + " " + client->__cmd[1] + " :You're not on that channel.";
+            client->put_message(error);
+            return ;
+        }
+        if (channel->find_client(client->get_socket())) {
+            if (channel->find_operator(client->get_socket())) {
+                if (this->__channels.find(client->__cmd[1]) != this->__channels.end()) {
+                    if (client->__cmd[2][0] == '+') {
+                        if (client->__cmd[2][1] == 'i') {
+                            channel->set_modeinvite(true);
+                        } else if (client->__cmd[2][1] == 't') {
+                            channel->set_modetopic(true);
+                        } else if (client->__cmd[2][1] == 'k') {
+                            if (client->__cmd.size() == 4) {
+                                channel->set_modekey(true);
+                                channel->set_key(key);
+                                message = ":ft_irc " + channel->get_name() + " +k :Set the channel key to " + key + ".";
+                                client->put_message(message);
+                                return ;
+                            } else {
+                                error = ":ft_irc 472 " + client->get_nickname() + " +k :Is unknown mode char to me.";
+                                client->put_message(error);
+                                return ;
+                            }
+                        } else {
+                            error = ":ft_irc 501 " + client->get_nickname() + " :Unknown MODE flag.";
+                            client->put_message(error);
+                            return ;
+                        }
+                    } else if (client->__cmd[2][0] == '-') {
+                        if (client->__cmd[2][1] == 'i') {
+                            channel->set_modeinvite(false);
+                        } else if (client->__cmd[2][1] == 't') {
+                            channel->set_modetopic(false);
+                        } else if (client->__cmd[2][1] == 'k') {
+                            if (!channel->get_key().empty()) {
+                                message = ":ft_irc " + channel->get_name() + " -k :Remove the channel key from " + channel->get_name() + ".";
+                                client->put_message(message);
+                            }
+                            channel->set_modekey(false);
+                            channel->set_key("");
+                            return ;
+                        } else {
+                            error = ":ft_irc 501 " + client->get_nickname() + " :Unknown MODE flag.";
+                            client->put_message(error);
+                            return ;
+                        }
+                    } else {
+                        error = ":ft_irc 501 " + client->get_nickname() + " :Unknown MODE flag.";
+                        client->put_message(error);
+                        return ;
+                    }
+                }
+            } else {
+                error = ":ft_irc 482 " + client->get_nickname() + " " + channel->get_name() + " :You're not channel operator.";
+                client->put_message(error);
+                return ;
+            }
+        }
+    } else {
+        if (find_client(target)) {
         }
     }
 }

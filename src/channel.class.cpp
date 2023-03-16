@@ -114,3 +114,19 @@ int Channel::get_client(std::string nick_name) {
     }
     return 0;
 }
+
+void    Channel::set_modeinvite(bool invite) {
+    invite = __modeinvite;
+}
+
+void    Channel::set_modetopic(bool topic) {
+    topic = __modetopic;
+}
+
+void    Channel::set_modeoperator(bool oper) {
+    oper = __modeoperator;
+}
+
+void    Channel::set_modekey(bool key) {
+    key = __modekey;
+}
