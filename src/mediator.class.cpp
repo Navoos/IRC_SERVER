@@ -235,7 +235,6 @@ void Mediator::part_cmd(Client *client) {
     std::string                 error;
     std::string                 message;
     std::string                 reason;
-    char                        hostname[256];
 
     if (client->__cmd.size() < 2) {
         error = ":ft_irc 461 " + client->get_nickname() + " PART :Not enough parameters.";
@@ -249,8 +248,6 @@ void Mediator::part_cmd(Client *client) {
             return ;
         }
         int i = 0;
-        if (gethostname(hostname, sizeof(hostname)) == -1)
-            perror("gethostname:");
         for (std::vector<std::string>::iterator it_reason = client->__cmd.begin() + 2; it_reason != client->__cmd.end(); ++it_reason)
             reason += *it_reason + " ";
         for (std::vector<std::string>::iterator it = __channels.begin(); it != __channels.end(); ++it, ++i) {
@@ -275,11 +272,11 @@ void Mediator::part_cmd(Client *client) {
                         return ;
                     for (std::map<int, Client*>::iterator it1 = channel->get_all_client().begin(); it1 != channel->get_all_client().end(); ++it1){
                         if (reason.size() == 0) { 
-                            message = ":ft_irc " + it1->second->get_nickname() + "@" + hostname + " PART " + __channels[i] + "    ; " + client->get_nickname() + " is leaving the channel " + __channels[i] + ".";
+                            message = ":ft_irc " + it1->second->get_nickname() + " :" + client->get_nickname() + " is leaving the channel " + __channels[i] + ".";
                             it1->second->put_message(message);
                             continue ;
                         } else {
-                            message = ":ft_irc " + it1->second->get_nickname() + "@" + hostname + " PART " + __channels[i] + "    ; " + client->get_nickname() + " is leaving the channel " + __channels[i] + " for " + reason + ".";
+                            message = ":ft_irc " + it1->second->get_nickname() + " :" + client->get_nickname() + " is leaving the channel " + __channels[i] + " for " + reason + ".";
                             it1->second->put_message(message);
                             continue ;
                         }
@@ -291,7 +288,7 @@ void Mediator::part_cmd(Client *client) {
                         for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); ++it_client) {
                             if (channel->get_all_client().size() > 0 && channel->get_moderators().size() == 0) {
                                 channel->add_moderator(it_client->second->get_socket());
-                                message = ":ft_irc    ; Command to part " + it_client->second->get_nickname() + " now is the operator of channel " + __channels[i] + ".";
+                                message = ":ft_irc :" + it_client->second->get_nickname() + " now is the operator of channel " + __channels[i] + ".";
                                 it_client->second->put_message(message);
                             }
                         }
@@ -351,7 +348,7 @@ void Mediator::kick_cmd(Client *client) {
                 continue ;
             } else {
                 if (__channels[i][1] == '\0') {
-                    error = ":ft_irc 002 " + client->get_nickname() + " :you need name of channel.";
+                    error = ":ft_irc 002 " + client->get_nickname() + " :You need name of channel.";
                     client->put_message(error);
                     continue ;
                 }
@@ -370,9 +367,9 @@ void Mediator::kick_cmd(Client *client) {
                                         return;
                                     for (std::map<int, Client*>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end(); ++it) {
                                         if (comment.size() == 0) {
-                                            message = ":ft_irc    ; Command to kick " + *it_clients + " from " + __channels[i] + ".";
+                                            message = ":ft_irc " + client->get_nickname() + " :Kick " + *it_clients + " from " + __channels[i] + ".";
                                         } else {
-                                            message = ":ft_irc    ; Command to kick " + *it_clients + " from " + __channels[i] + " using \"" + comment + "\" as the reason (comment).";
+                                            message = ":ft_irc " + client->get_nickname() + " :Kick " + *it_clients + " from " + __channels[i] + " using \"" + comment + "\" as the reason.";
                                         }
                                         it->second->put_message(message);
                                     }
@@ -472,7 +469,7 @@ void    Mediator::mode_cmd(Client *client) {
                                         if (!channel->find_operator(channel->get_client(user))) {
                                             channel->add_moderator(channel->get_client(user));
                                             for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); it_client++) {
-                                                message = ":ft_irc " + client->get_nickname() + " -o :Set the operator to " + user + ".";
+                                                message = ":ft_irc " + client->get_nickname() + " +o :Set the operator to " + user + ".";
                                                 it_client->second->put_message(message);
                                             }
                                         } else {
@@ -518,12 +515,12 @@ void    Mediator::mode_cmd(Client *client) {
                                                 it_client->second->put_message(message);
                                             }
                                         } else {
-                                            error = ":ft_irc 000 " + target + " :Is not a operator.";
+                                            error = ":ft_irc 000 " + user + " :Is not a operator.";
                                             client->put_message(error);
                                             return ;
                                         }
                                     } else {
-                                        error = ":ft_irc 401 " + client->get_nickname() + " " + target + " :No such nick/channel.";
+                                        error = ":ft_irc 401 " + client->get_nickname() + " " + user + " :No such nick/channel.";
                                         client->put_message(error);
                                         return ;
                                     }
@@ -559,7 +556,7 @@ void    Mediator::mode_cmd(Client *client) {
                                 if (!it->second->find_operator(it->second->get_client(target))) {
                                     it->second->add_moderator(it->second->get_client(target));
                                     for (std::map<int, Client*>::iterator it_client = it->second->get_all_client().begin(); it_client != it->second->get_all_client().end(); it_client++) {
-                                        message = ":ft_irc " + client->get_nickname() + " -o :Set the operator to " + target + ".";
+                                        message = ":ft_irc " + client->get_nickname() + " +o :Set the operator to " + target + ".";
                                         it_client->second->put_message(message);
                                     }
                                 } else {
@@ -606,6 +603,27 @@ void    Mediator::mode_cmd(Client *client) {
             }
         }
     }
+}
+
+void    Mediator::quit_cmd(Client *client) {
+    // std::string error;
+    std::string reason;
+
+    std::cout << "enter here" << std::endl;
+    if (client->__cmd.size() == 2)
+        for (std::vector<std::string>::iterator it = client->__cmd.begin() + 1; it != client->__cmd.end(); it++)
+            reason += *it + " ";
+    if (this->__channels.size() > 0) 
+        std::cout << "channel's size is biger than 0" << std::endl;
+    if (this->__clients.size() > 0) 
+        std::cout << "client's size is biger than 0" << std::endl;
+    close(client->get_socket());
+    for (std::map<std::string, Channel*>::iterator it = this->get_channels().begin(); it != this->get_channels().end(); it++) {
+        for (std::map<int, Client*>::iterator it_client = it->second->get_all_client().begin(); it_client != it->second->get_all_client().end(); it_client++) {
+            it_client->second->put_message("ta ra hada khrej mn server");
+        }
+    }
+    std::cout << "size of clients " << this->__clients.size() << std::endl;
 }
 
 bool    Mediator::search_channel(std::string name, std::map<std::string, Channel*>     __channels){

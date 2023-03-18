@@ -133,4 +133,6 @@ void   Client::execute(Mediator *mediator){
         mediator->kick_cmd(this);
     if (__cmd[0] == "MODE" || __cmd[0] == "mode")
         mediator->mode_cmd(this);
+    if (__cmd[0] == "QUIT" || __cmd[0] == "quit")
+        mediator->quit_cmd(this);
 }
