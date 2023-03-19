@@ -49,6 +49,8 @@ class Mediator {
       void  set_client(int fd, std::string &buffer);
       void  add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator);
       bool  search_channel(std::string name, std::map<std::string, Channel*>     __channels);
+      std::string getRandomJoke();
+      void command_bot(Client *client);
       // todo: add invit command
       // todo: add topic command
       // HOUSSAM: add additional commands here

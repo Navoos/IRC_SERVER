@@ -137,4 +137,6 @@ void   Client::execute(Mediator *mediator){
     // //deadpool
     if (__cmd[0] == "NOTICE" || __cmd[0] == "notice")
         mediator->notice_cmd(this);
+    if (__cmd[0] == "BOT" || __cmd[0] == "bot")
+        mediator->command_bot(this);
 }

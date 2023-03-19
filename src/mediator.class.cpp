@@ -622,3 +622,26 @@ void Mediator::notice_cmd(Client *client) {
        }
     }
 }
+
+std::string Mediator::getRandomJoke() {
+    std::vector<std::string> jokes;
+jokes.push_back("Why don't scientists trust atoms? Because they make up everything.");
+jokes.push_back("I told my wife she was drawing her eyebrows too high. She looked surprised.");
+jokes.push_back("Why did the tomato turn red? Because it saw the salad dressing.");
+jokes.push_back("Why did the coffee file a police report? It got mugged.");
+jokes.push_back("I'm reading a book on anti-gravity. It's impossible to put down.");
+jokes.push_back("What do you call an alligator in a vest? An investigator.");
+jokes.push_back("what do you call a cut dor... adorable.");
+jokes.push_back("what do you call someone without nose without body... no body knows.");
+
+
+    int index = rand() % jokes.size();
+
+    return jokes[index];
+}
+
+void Mediator::command_bot(Client *client) {
+            std::string joke = getRandomJoke();
+            client->put_message("hello " + client->get_nickname() + " Joke of the Day : " + joke);
+        
+}
