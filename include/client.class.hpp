@@ -8,36 +8,36 @@
 
 class Client {
 	private:
-		std::vector<std::string> __cmd;
-		std::string             &__server_password;
-		std::map<std::string, Channel*> __channels;
-	std::string   __buffer;
-		int           __fd;
-		Mediator *__mediator;
+		std::vector<std::string>		__cmd;
+		std::string						&__server_password;
+		std::map<std::string, Channel*>	__channels;
+		std::string						__buffer;
+		int								__fd;
+		Mediator						*__mediator;
 		friend class Mediator;
-
-		bool    __connected;
-		bool    __accepted;
-
-	std::string				__nick;
-	std::string				__user;
-	
+		bool							__connected;
+		bool							__accepted;
+		std::string						__nick;
+		std::string						__user;
+        bool                            __voice;
 	public:
 		Client(int fd, std::string &password, Mediator *mediator);
-		bool    is_connected();
-		bool    is_accepted(); 
-		bool    put_message(std::string message);
-		void    update_client(std::string &str);
-		void    set_accepted(bool acc);
-		void    set_connected(bool connected);
-		void	set_nickname(std::string nick);
-	void	set_username(std::string user);
+		bool    		is_connected();
+		bool    		is_accepted(); 
+		bool    		put_message(std::string message);
+		void    		update_client(std::string &str);
+		void    		set_accepted(bool acc);
+		void    		set_connected(bool connected);
+		void			set_nickname(std::string nick);
+		void			set_username(std::string user);
 		std::string	    get_nickname(void) const ;
-	std::string	    get_username(void) const ;
-    bool    check_connection(void);
-    void    execute(Mediator *mediator);
-    void    subscribe_to_channel(Channel *channel);
-    int			get_socket(void) const;
-    Channel*    get_channel(std::string &name);
+		std::string	    get_username(void) const ;
+    	bool    		check_connection(void);
+    	void    		execute(Mediator *mediator);
+    	void    		subscribe_to_channel(Channel *channel);
+    	int				get_socket(void) const;
+    	Channel*    	get_channel(std::string &name);
+        bool            has_voice();
 };
+
 #endif

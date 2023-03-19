@@ -14,6 +14,7 @@ private:
 	std::string __topic;
 	std::map<int, Client *> __clients;
 	bool __mode;
+    bool __moderated;
 	std::string __key;
     std::set<int> __moderators;
     std::set<int> __invited;
@@ -38,6 +39,7 @@ public:
     bool    find_operator(int client);
     void    delete_client(int client_fd); 
     void    delete_moderator(int moderator);
+    bool    is_moderated();
     std::set<int> get_moderators();
     std::map<int, Client*>& get_all_client();
 };

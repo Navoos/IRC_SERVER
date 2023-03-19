@@ -6,6 +6,7 @@ Channel::Channel(std::string name, std::string topic, std::string key){
     __topic = topic;
     __key = key;
     __mode = false;
+    __moderated = false;
 }
 Channel::~Channel(){};
 
@@ -91,6 +92,10 @@ void Channel::delete_moderator(int moderator) {
 
 std::set<int> Channel::get_moderators() {
     return (this->__moderators);
+}
+
+bool Channel::is_moderated() {
+    return __moderated;
 }
 
 bool Channel::find_client(std::string &nick_name) {
