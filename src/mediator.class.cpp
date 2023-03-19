@@ -651,16 +651,16 @@ void    Mediator::topic_cmd(Client *client){
                 client->put_message(":ft_irc 482 " + client->get_nickname() + " :You're not channel operator");
             }
             else {
-                if (channel->get_modetopic()) {
-                    if (client->__cmd.size() >= 3) {
+                if (client->__cmd.size() >= 3) {
+                    if (channel->get_modetopic()) {
                         if (client->__cmd[2] == ":" && channel)
                             channel->set_topic("");
                         else if (channel)
                             channel->set_topic(client->__cmd[2].substr(1));
+                    } else {
+                        client->put_message(":ft_irc don't have mode topic");
+                        return ;
                     }
-                } else {
-                    client->put_message(":ft_irc don't have mode topic");
-                    return ;
                 }
             }
         }

@@ -118,19 +118,19 @@ int Channel::get_client(std::string nick_name) {
 }
 
 void    Channel::set_modeinvite(bool invite) {
-    invite = __modeinvite;
+    __modeinvite = invite;
 }
 
 void    Channel::set_modetopic(bool topic) {
-    topic = __modetopic;
+    __modetopic = topic;
 }
 
 void    Channel::set_modeoperator(bool oper) {
-    oper = __modeoperator;
+    __modeoperator = oper;
 }
 
 void    Channel::set_modekey(bool key) {
-    key = __modekey;
+    __modekey = key;
 }
 
 bool    Channel::get_modetopic() {
