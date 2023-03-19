@@ -6,6 +6,8 @@ Channel::Channel(std::string name, std::string topic, std::string key){
     __topic = topic;
     __key = key;
     __mode = false;
+    // __modetopic = false;
+
 }
 Channel::~Channel(){};
 
@@ -129,4 +131,8 @@ void    Channel::set_modeoperator(bool oper) {
 
 void    Channel::set_modekey(bool key) {
     key = __modekey;
+}
+
+bool    Channel::get_modetopic() {
+    return __modetopic;
 }

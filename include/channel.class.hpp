@@ -48,6 +48,7 @@ public:
 	void					set_modetopic(bool topic);
 	void					set_modekey(bool key);
 	void        			set_modeoperator(bool oper);
+	bool					get_modetopic();
 	int             		get_client(std::string nick);
 };
 

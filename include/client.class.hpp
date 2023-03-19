@@ -14,7 +14,7 @@ class Client {
 		std::string						__buffer;
 		int								__fd;
 		Mediator						*__mediator;
-		friend class Mediator;
+		friend class 					Mediator;
 		bool							__connected;
 		bool							__accepted;
 		std::string						__nick;

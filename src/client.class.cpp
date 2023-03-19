@@ -78,7 +78,6 @@ bool  Client::put_message(std::string message)
     return (true);
 }
 
-
 bool    Client::check_connection(void){
     if ( get_nickname().empty() || get_username().empty() || is_connected() || !is_accepted())
         return false;
@@ -114,25 +113,35 @@ void Client::erase_channel(std::string &channel)
         this->__channels.erase(channel);
 }
 
+// void Client::erase_channel(std::string channel) {
+//     if (this->__channels.find(channel) != this->__channels.end())
+//         this->__channels.erase(channel);
+// }
+
+// std::map<std::string, Channel*> Client::get_channels() {
+//     return __channels;
+// }
 
 void   Client::execute(Mediator *mediator){
     if (__cmd[0] == "PASS" || __cmd[0] == "pass")
         mediator->pass_cmd(this, mediator->get_server());
-    if (__cmd[0] == "USER" || __cmd[0] == "user")
+    else if (__cmd[0] == "USER" || __cmd[0] == "user")
         mediator->user_cmd(this);
-    if (__cmd[0] == "NICK" || __cmd[0] == "nick")
+    else if (__cmd[0] == "NICK" || __cmd[0] == "nick")
         mediator->nick_cmd(this);
-    if (__cmd[0] == "JOIN" || __cmd[0] == "join")
+    else if (__cmd[0] == "JOIN" || __cmd[0] == "join")
         mediator->join_cmd(this);
-    if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
+    else if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
         mediator->topic_cmd(this);
     //deadpool
-    if (__cmd[0] == "PART" || __cmd[0] == "part")
+    else if (__cmd[0] == "PART" || __cmd[0] == "part")
         mediator->part_cmd(this);
-    if (__cmd[0] == "KICK" || __cmd[0] == "kick")
+    else if (__cmd[0] == "KICK" || __cmd[0] == "kick")
         mediator->kick_cmd(this);
-    if (__cmd[0] == "MODE" || __cmd[0] == "mode")
+    else if (__cmd[0] == "MODE" || __cmd[0] == "mode")
         mediator->mode_cmd(this);
-    if (__cmd[0] == "QUIT" || __cmd[0] == "quit")
+    else if (__cmd[0] == "QUIT" || __cmd[0] == "quit")
         mediator->quit_cmd(this);
+    else
+        mediator->command_not_found(this);
 }
