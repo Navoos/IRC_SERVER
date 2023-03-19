@@ -175,12 +175,6 @@ void Mediator::join_cmd(Client *client){
             client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
         } else {
             Channel *channel = this->__channels.at(*it);
-            if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
-                channel->add_moderator(client->get_socket());
-            }
-            if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
-                channel->add_moderator(client->get_socket());
-            }
             if (channel->find_client(client->get_socket())) {
                 client->put_message(":ft_irc 480 " + client->get_nickname() +" :is already on channel");
                 // std::string string = ":" + client->get_nickname() + " 443 * is already on channel\n";
@@ -364,7 +358,6 @@ void Mediator::kick_cmd(Client *client) {
         }
     }
 }
-
 bool    Mediator::search_channel(std::string name, std::map<std::string, Channel*>     __channels){
     if (__channels.find(name) == __channels.end()) {
         return false;
