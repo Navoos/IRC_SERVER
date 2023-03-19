@@ -14,7 +14,7 @@ class Client {
 		std::string						__buffer;
 		int								__fd;
 		Mediator						*__mediator;
-		friend class Mediator;
+		friend class 					Mediator;
 		bool							__connected;
 		bool							__accepted;
 		std::string						__nick;
@@ -38,6 +38,7 @@ class Client {
     	int				get_socket(void) const;
     	Channel*    	get_channel(std::string &name);
         bool            has_voice();
+		void			erase_channel(std::string &channel);
 };
 
 #endif

@@ -7,12 +7,15 @@ Channel::Channel(std::string name, std::string topic, std::string key){
     __key = key;
     __mode = false;
     __moderated = false;
+    // __modetopic = false;
+
 }
 Channel::~Channel(){};
 
 std::string    Channel::get_name(void) const{
     return __name;
 }
+
 std::string Channel::get_key(void) const{
     return __key;
 }
@@ -106,4 +109,35 @@ bool Channel::find_client(std::string &nick_name) {
         }
     }
     return false;
+}
+
+//deadpool
+
+int Channel::get_client(std::string nick_name) {
+    for (std::map<int, Client*>::iterator it = this->__clients.begin(); it != this->__clients.end(); ++it) {
+        if (it->second->get_nickname() == nick_name) {
+            return (it->second->get_socket());
+        }
+    }
+    return 0;
+}
+
+void    Channel::set_modeinvite(bool invite) {
+    __modeinvite = invite;
+}
+
+void    Channel::set_modetopic(bool topic) {
+    __modetopic = topic;
+}
+
+void    Channel::set_modeoperator(bool oper) {
+    __modeoperator = oper;
+}
+
+void    Channel::set_modekey(bool key) {
+    __modekey = key;
+}
+
+bool    Channel::get_modetopic() {
+    return __modetopic;
 }
