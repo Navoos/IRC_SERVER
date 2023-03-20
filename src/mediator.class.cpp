@@ -606,7 +606,6 @@ void    Mediator::quit_cmd(Client *client)
     }
     close(client->get_socket());
     this->delete_client(client->get_socket());
-    system("leaks ircserv");
 }
 
 void    Mediator::command_not_found(Client *client) {
