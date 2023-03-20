@@ -172,9 +172,6 @@ void Mediator::join_cmd(Client *client){
             if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
                 channel->add_moderator(client->get_socket());
             }
-            if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
-                channel->add_moderator(client->get_socket());
-            }
             if (channel->find_client(client->get_socket())) {
                 client->put_message(":ft_irc 480 " + client->get_nickname() +" :is already on channel");
                 return ;

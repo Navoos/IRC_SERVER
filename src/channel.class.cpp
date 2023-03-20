@@ -97,10 +97,6 @@ std::set<int> Channel::get_moderators() {
     return (this->__moderators);
 }
 
-bool Channel::is_moderated() {
-    return __moderated;
-}
-
 bool Channel::find_client(std::string &nick_name) {
     std::map<int, Client*>::iterator it;
     for (it = this->__clients.begin(); it != this->__clients.end(); ++it) {
@@ -140,4 +136,8 @@ void    Channel::set_modekey(bool key) {
 
 bool    Channel::get_modetopic() {
     return __modetopic;
+}
+
+bool Channel::is_moderated() {
+    return __moderated;
 }

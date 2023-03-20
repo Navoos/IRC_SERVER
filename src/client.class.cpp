@@ -152,7 +152,6 @@ void   Client::execute(Mediator *mediator){
     // //deadpool
     // if (__cmd[0] == "PART" || __cmd[0] == "part")
     //     mediator->part_cmd(this, __cmd);
-}
     else if (__cmd[0] == "MODE" || __cmd[0] == "mode")
         mediator->mode_cmd(this);
     else if (__cmd[0] == "QUIT" || __cmd[0] == "quit")

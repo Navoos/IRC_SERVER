@@ -41,6 +41,7 @@ public:
 	bool					find_client(std::string &nick_name);
 	bool					find_operator(int client);
 	void					delete_client(int client_fd); 
+    bool                    is_moderated();
 	void					delete_moderator(int moderator);
 	std::set<int>			get_moderators();
 	std::map<int, Client*>&	get_all_client();
