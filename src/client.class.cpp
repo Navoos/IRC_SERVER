@@ -158,4 +158,8 @@ void   Client::execute(Mediator *mediator){
         mediator->quit_cmd(this);
     else
         mediator->command_not_found(this);
+    if (__cmd[0] == "NOTICE" || __cmd[0] == "notice")
+        mediator->notice_cmd(this);
+    if (__cmd[0] == "BOT" || __cmd[0] == "bot")
+        mediator->command_bot(this);
 }

@@ -24,13 +24,11 @@ static bool valid_name(std::string nickname){
 void Mediator::pass_cmd(Client *client, Server server) {
     if (client->is_connected()) {
         client->put_message(":ft_irc 462 " + client->get_nickname() +" :You may not reregister");
-        // client->put_message(ERR_ALREADYREGISTERED, ":You may not reregister");
         return;
     }
 
     if (client->__cmd.size() != 2) {
         client->put_message(":ft_irc 461 " + client->get_nickname() +" :Not enough parameters");
-        // client->put_message(ERR_NEEDMOREPARAMS, ":Not enough parameters");
         return;
     }
     if (client->__cmd[1] == server.get_password()) {
@@ -38,7 +36,6 @@ void Mediator::pass_cmd(Client *client, Server server) {
     }
     else {
         client->put_message(":ft_irc 464 " + client->get_nickname() +" :Password incorrect");
-        // client->put_message(ERR_PASSWDMISMATCH, ":Password incorrect");
         return; 
     }
     client->check_connection();
@@ -62,27 +59,23 @@ void Mediator::user_cmd(Client *client){
 void    Mediator::nick_cmd(Client *client){
     if (client->is_connected()){
         client->put_message(":ft_irc 018 " + client->get_nickname() +" :Your connection is restricted!");
-        // client->put_message(ERR_RESTRICTED, ":Your connection is restricted!");
         return;
     }
 
 	if (client->__cmd.size() != 2 || client->__cmd[1].length() == 0)
     {
         client->put_message(":ft_irc 431 " + client->get_nickname() +" :Not given nickname");
-		// client->put_message(ERR_NONICKNAMEGIVEN, ":Not given nickname");
         return;
     }
 
     if (!valid_name(client->__cmd[1])){
         client->put_message(":ft_irc 432 " + client->get_nickname() +" :Erroneus nickname");
-        // client->put_message(ERR_ERRONEUSNICKNAME, ":Erroneus nickname");
         return;
     } else {
         
         for (std::map<int,Client *>::iterator it = this->__clients.begin(); it != this->__clients.end(); ++it) {
             if (it->second->get_nickname() == client->__cmd[1]) {
                 client->put_message(":ft_irc 433 " + client->get_nickname() +" :Nickname is already in use");
-                // client->put_message(ERR_NICKNAMEINUSE, ":Nickname is already in use");
                 return;
             }
         }
@@ -643,7 +636,7 @@ void    Mediator::topic_cmd(Client *client){
             channel = client->get_channel(client->__cmd[1]);
             if (channel == NULL) {
                 client->put_message(":ft_irc 442 " + client->get_nickname() + " :You're not on that channel");
-                return;
+                return;   
             }
             if (!channel->find_operator(client->get_socket())){
                 client->put_message(":ft_irc 482 " + client->get_nickname() + " :You're not channel operator");
@@ -837,4 +830,84 @@ void Mediator::privmsg_cmd(Client *client) {
            }
        }
     }
+}
+void Mediator::notice_cmd(Client *client) {
+    if (client->__cmd.size() < 3) {
+        return ;
+    }
+    std::vector<std::string> targets = split(client->__cmd[1], ',');
+    std::string message_to_be_sent = "";
+    for (unsigned int i = 2; i < client->__cmd.size();++i) {
+        message_to_be_sent += client->__cmd[i];
+        message_to_be_sent += " ";
+    }
+
+    for (unsigned int i = 0;i < targets.size();++i) {
+        if (targets[i][0] == '#') {
+            if (this->__channels.find(targets[i]) == this->__channels.end()) {
+                continue ;
+            } else {
+                // if channel is moderated the only who has the voice command and operator can send messages
+                Channel *channel = this->__channels.at(targets[i]);
+                if (!channel)
+                    continue;
+                if (!channel->is_moderated()) {
+                    // send normally
+                    std::string msg = ":" + client->get_nickname() + " NOTICE " + channel->get_name() + " " + message_to_be_sent + "\r\n";
+                    for (std::map<int, Client *>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end();++it) {
+                        if (send(it->first, msg.c_str(), msg.length(), 0) == -1)
+                        {
+                            perror("send");
+                            continue;
+                        }
+                    }
+                    continue;
+                }
+                if (channel->is_moderated() && (channel->find_operator(client->get_socket()) || client->has_voice())) {
+                    // send message to all clients currently connected
+                    for (std::map<int, Client *>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end();++it) {
+                        if (send(it->first, client->__cmd[2].c_str(), client->__cmd[2].length(), 0) == -1)
+                        {
+                            perror("send");
+                            continue;
+                        }
+                    }
+                    continue;
+                } 
+            }
+       } else {
+           Client *send_client = get_client(targets[i]);
+           if (send_client) {
+                std::string msg = ":" + client->get_nickname() + " NOTICE " + send_client->get_nickname() + " " + message_to_be_sent + "\r\n";
+                if (send(send_client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
+                    perror("send");
+                    continue;
+                }
+                continue;
+           } 
+       }
+    }
+}
+
+std::string Mediator::getRandomJoke() {
+    std::vector<std::string> jokes;
+jokes.push_back("Why don't scientists trust atoms? Because they make up everything.");
+jokes.push_back("I told my wife she was drawing her eyebrows too high. She looked surprised.");
+jokes.push_back("Why did the tomato turn red? Because it saw the salad dressing.");
+jokes.push_back("Why did the coffee file a police report? It got mugged.");
+jokes.push_back("I'm reading a book on anti-gravity. It's impossible to put down.");
+jokes.push_back("What do you call an alligator in a vest? An investigator.");
+jokes.push_back("what do you call a cut dor... adorable.");
+jokes.push_back("what do you call someone without nose without body... no body knows.");
+
+
+    int index = rand() % jokes.size();
+
+    return jokes[index];
+}
+
+void Mediator::command_bot(Client *client) {
+            std::string joke = getRandomJoke();
+            client->put_message("hello " + client->get_nickname() + " Joke of the Day : " + joke);
+        
 }
