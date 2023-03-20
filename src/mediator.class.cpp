@@ -437,7 +437,6 @@ void    Mediator::mode_cmd(Client *client) {
                             channel->set_modeinvite(true);
                         } else if (modestring[1] == 't') {
                             channel->set_modetopic(true);
-                            std::cout << channel->get_modetopic() << std::endl;
                         } else if (modestring[1] == 'k') {
                             if (client->__cmd.size() == 4) {
                                 channel->set_modekey(true);
