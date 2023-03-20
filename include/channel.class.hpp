@@ -51,6 +51,7 @@ public:
 	void					set_modekey(bool key);
 	void        			set_modeoperator(bool oper);
 	bool					get_modetopic();
+	bool					get_modeinvite();
 	int             		get_client(std::string nick);
 };
 

@@ -84,7 +84,7 @@ bool  Client::put_message(std::string message)
 }
 
 bool    Client::check_connection(void){
-    if ( get_nickname().empty() || get_username().empty() || is_connected() || !is_accepted())
+    if (this->get_nickname().empty() || this->get_username().empty() || !this->is_accepted())
         return false;
     set_connected(true);
     char hostname[MAXHOSTNAMELEN];
@@ -134,32 +134,36 @@ void   Client::execute(Mediator *mediator){
         mediator->user_cmd(this);
     else if (__cmd[0] == "NICK" || __cmd[0] == "nick")
         mediator->nick_cmd(this);
-    else if (__cmd[0] == "JOIN" || __cmd[0] == "join")
-        mediator->join_cmd(this);
-    else if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
-        mediator->topic_cmd(this);
-    //deadpool
-    else if (__cmd[0] == "PART" || __cmd[0] == "part")
-        mediator->part_cmd(this);
-    else if (__cmd[0] == "KICK" || __cmd[0] == "kick")
-        mediator->kick_cmd(this);
-    else if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
-        mediator->topic_cmd(this);
-    else if (__cmd[0] == "invite" || __cmd[0] == "INVITE")
-        mediator->invite_cmd(this);
-    else if (__cmd[0] == "privmsg" || __cmd[0] == "PRIVMSG")
-        mediator->privmsg_cmd(this);
-    // //deadpool
-    // if (__cmd[0] == "PART" || __cmd[0] == "part")
-    //     mediator->part_cmd(this, __cmd);
-    else if (__cmd[0] == "MODE" || __cmd[0] == "mode")
-        mediator->mode_cmd(this);
-    else if (__cmd[0] == "QUIT" || __cmd[0] == "quit")
-        mediator->quit_cmd(this);
-    else if (__cmd[0] == "NOTICE" || __cmd[0] == "notice")
-        mediator->notice_cmd(this);
-    else if (__cmd[0] == "BOT" || __cmd[0] == "bot")
-        mediator->command_bot(this);
-    else 
-        mediator->command_not_found(this);
+    else if (this->is_connected()) {
+        if (__cmd[0] == "JOIN" || __cmd[0] == "join")
+            mediator->join_cmd(this);
+        else if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
+            mediator->topic_cmd(this);
+        //deadpool
+        else if (__cmd[0] == "PART" || __cmd[0] == "part")
+            mediator->part_cmd(this);
+        else if (__cmd[0] == "KICK" || __cmd[0] == "kick")
+            mediator->kick_cmd(this);
+        else if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
+            mediator->topic_cmd(this);
+        else if (__cmd[0] == "invite" || __cmd[0] == "INVITE")
+            mediator->invite_cmd(this);
+        else if (__cmd[0] == "privmsg" || __cmd[0] == "PRIVMSG")
+            mediator->privmsg_cmd(this);
+        // //deadpool
+        // if (__cmd[0] == "PART" || __cmd[0] == "part")
+        //     mediator->part_cmd(this, __cmd);
+        else if (__cmd[0] == "MODE" || __cmd[0] == "mode")
+            mediator->mode_cmd(this);
+        else if (__cmd[0] == "QUIT" || __cmd[0] == "quit")
+            mediator->quit_cmd(this);
+        else if (__cmd[0] == "NOTICE" || __cmd[0] == "notice")
+            mediator->notice_cmd(this);
+        else if (__cmd[0] == "joke" || __cmd[0] == "JOKE")
+            mediator->command_bot(this);
+        else 
+            mediator->command_not_found(this);
+    } else {
+        this->put_message(":ft_irc 910 " + this->get_nickname() + ":You have to be registered");
+    }
 }

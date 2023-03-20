@@ -159,7 +159,7 @@ void Mediator::join_cmd(Client *client){
             channel->add_client(client);
             client->subscribe_to_channel(channel);
             this->__channels.insert(std::make_pair(*it, channel));
-            client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
+            client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
         } else {
             Channel *channel = this->__channels.at(*it);
             if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
@@ -175,7 +175,7 @@ void Mediator::join_cmd(Client *client){
                         if (keys[j] == channel->get_key()) {
                                 channel->add_client(client);
                                 client->subscribe_to_channel(channel);
-                                client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
+                                client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
                         } else {
                             client->put_message(":ft_irc 475 " + client->get_nickname() + " " + channel->get_name() + " :Cannot join channel (+k)");
                         }
@@ -188,14 +188,14 @@ void Mediator::join_cmd(Client *client){
                         if (!keys.empty() && j < (int)keys.size() && keys[j] == channel->get_key()) {
                                 channel->add_client(client);
                                 client->subscribe_to_channel(channel);
-                                client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
+                                client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
                         } else {
                             client->put_message(":ft_irc 475 " + client->get_nickname() + " " + channel->get_name() + " :Cannot join channel (+k)");
                         }
                         } else {
                             channel->add_client(client);
                             client->subscribe_to_channel(channel);
-                            client->put_message(":ft_irc 400 " + client->get_nickname() +" join this "+ channel->get_name() + " :not topic");
+                            client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
                 }
             }
         }
@@ -639,15 +639,26 @@ void    Mediator::topic_cmd(Client *client){
                 return;   
             }
             if (!channel->find_operator(client->get_socket())){
-                client->put_message(":ft_irc 482 " + client->get_nickname() + " :You're not channel operator");
+                client->put_message(":ft_irc 482 " + client->get_nickname() + " " + channel->get_name() + " :You're not channel operator");
+                return ;
             }
             else {
+                std::string topic = "";
                 if (client->__cmd.size() >= 3) {
                     if (channel->get_modetopic()) {
                         if (client->__cmd[2] == ":" && channel)
-                            channel->set_topic("");
-                        else if (channel)
-                            channel->set_topic(client->__cmd[2].substr(1));
+                            channel->set_topic(topic);
+                        else if (channel) {
+                            if (client->__cmd[2][0] == ':') {
+                                topic += client->__cmd[2].substr(1);
+                                for (unsigned int i = 3;i < client->__cmd.size();++i) {
+                                    topic += client->__cmd[i];
+                                }
+                            }
+                            else
+                                topic = client->__cmd[2];
+                        }
+                        client->put_message(":" + client->get_nickname() + " " + "TOPIC " + channel->get_name() + " " + topic);
                     } else {
                         client->put_message(":ft_irc don't have mode topic");
                         return ;
@@ -700,7 +711,7 @@ void Mediator::invite_cmd(Client *client) {
     if (!invite_channel) {
         return ;
     }
-    if (invite_channel->get_mode()) {
+    if (invite_channel->get_modeinvite()) {
         if (invite_channel->find_operator(client->get_socket())) {
             if (invite_channel->is_invited(this->get_client(client->__cmd[1])->get_socket())) {
                 std::string msg = ":ft_irc 555 " + client->get_nickname() + " " + client->__cmd[1] + " " + client->__cmd[2] + " :is already invited";
@@ -889,25 +900,22 @@ void Mediator::notice_cmd(Client *client) {
     }
 }
 
-std::string Mediator::getRandomJoke() {
+std::string Mediator::get_random_joke() {
     std::vector<std::string> jokes;
-jokes.push_back("Why don't scientists trust atoms? Because they make up everything.");
-jokes.push_back("I told my wife she was drawing her eyebrows too high. She looked surprised.");
-jokes.push_back("Why did the tomato turn red? Because it saw the salad dressing.");
-jokes.push_back("Why did the coffee file a police report? It got mugged.");
-jokes.push_back("I'm reading a book on anti-gravity. It's impossible to put down.");
-jokes.push_back("What do you call an alligator in a vest? An investigator.");
-jokes.push_back("what do you call a cut dor... adorable.");
-jokes.push_back("what do you call someone without nose without body... no body knows.");
-
-
+    jokes.push_back("Why don't scientists trust atoms? Because they make up everything.");
+    jokes.push_back("I told my wife she was drawing her eyebrows too high. She looked surprised.");
+    jokes.push_back("Why did the tomato turn red? Because it saw the salad dressing.");
+    jokes.push_back("Why did the coffee file a police report? It got mugged.");
+    jokes.push_back("I'm reading a book on anti-gravity. It's impossible to put down.");
+    jokes.push_back("What do you call an alligator in a vest? An investigator.");
+    jokes.push_back("what do you call a cut dor... adorable.");
+    jokes.push_back("what do you call someone without nose without body... no body knows.");
     int index = rand() % jokes.size();
-
     return jokes[index];
 }
 
 void Mediator::command_bot(Client *client) {
-            std::string joke = getRandomJoke();
+            std::string joke = get_random_joke();
             client->put_message("hello " + client->get_nickname() + " Joke of the Day : " + joke);
         
 }
