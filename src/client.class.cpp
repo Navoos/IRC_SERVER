@@ -33,6 +33,13 @@ Client::Client(int fd, std::string &server_password, Mediator *mediator) : __ser
     this->__connected = false;
     this->__accepted = false;
     this->__voice = false;
+    char hostname[MAXHOSTNAMELEN];
+    memset(hostname, 0, sizeof hostname);
+    if (gethostname(hostname, MAXHOSTNAMELEN) == -1) {
+        perror("gethostname");
+    } else {
+        this->__hostname = std::string(hostname);
+    }
 }
 
 void    Client::update_client(std::string &str) {
@@ -67,6 +74,10 @@ bool Client::has_voice() {
     return this->__voice;
 }
 
+std::string Client::get_hostname() {
+    return this->__hostname;
+}
+
 bool  Client::put_message(std::string message)
 {
     std::stringstream  msg;
@@ -87,16 +98,7 @@ bool    Client::check_connection(void){
     if (this->get_nickname().empty() || this->get_username().empty() || !this->is_accepted())
         return false;
     set_connected(true);
-    char hostname[MAXHOSTNAMELEN];
-    memset(hostname, 0, sizeof hostname);
-    if (gethostname(hostname, MAXHOSTNAMELEN) == -1) {
-        perror("gethotname");
-        put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + "\n");
-        // put_message(RPL_WELCOME, ":Welcome to the Internet Relay Network, " + __nick + "\n");
-    }
-    else 
-        put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + " [ ! " + __user + "@" + hostname + "]\n");
-        // put_message(RPL_WELCOME, ":Welcome to the Internet Relay Network, " + __nick + " [ ! " + __user + "@" + hostname + "]\n");
+    put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + " [ !" + __user + "@" + this->get_hostname() + "]");
     return true;
 }
 

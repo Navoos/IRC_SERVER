@@ -20,6 +20,7 @@ class Client {
 		std::string						__nick;
 		std::string						__user;
         bool                            __voice;
+        std::string                     __hostname;
 	public:
 		Client(int fd, std::string &password, Mediator *mediator);
 		bool    		is_connected();
@@ -39,6 +40,7 @@ class Client {
     	Channel*    	get_channel(std::string &name);
         bool            has_voice();
 		void			erase_channel(std::string &channel);
+        std::string     get_hostname();
 };
 
 #endif
