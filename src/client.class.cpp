@@ -143,11 +143,11 @@ void   Client::execute(Mediator *mediator){
         mediator->part_cmd(this);
     else if (__cmd[0] == "KICK" || __cmd[0] == "kick")
         mediator->kick_cmd(this);
-    if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
+    else if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
         mediator->topic_cmd(this);
-    if (__cmd[0] == "invite" || __cmd[0] == "INVITE")
+    else if (__cmd[0] == "invite" || __cmd[0] == "INVITE")
         mediator->invite_cmd(this);
-    if (__cmd[0] == "privmsg" || __cmd[0] == "PRIVMSG")
+    else if (__cmd[0] == "privmsg" || __cmd[0] == "PRIVMSG")
         mediator->privmsg_cmd(this);
     // //deadpool
     // if (__cmd[0] == "PART" || __cmd[0] == "part")
@@ -156,10 +156,10 @@ void   Client::execute(Mediator *mediator){
         mediator->mode_cmd(this);
     else if (__cmd[0] == "QUIT" || __cmd[0] == "quit")
         mediator->quit_cmd(this);
-    else
-        mediator->command_not_found(this);
-    if (__cmd[0] == "NOTICE" || __cmd[0] == "notice")
+    else if (__cmd[0] == "NOTICE" || __cmd[0] == "notice")
         mediator->notice_cmd(this);
-    if (__cmd[0] == "BOT" || __cmd[0] == "bot")
+    else if (__cmd[0] == "BOT" || __cmd[0] == "bot")
         mediator->command_bot(this);
+    else 
+        mediator->command_not_found(this);
 }

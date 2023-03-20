@@ -34,8 +34,9 @@ class Mediator {
       // deadpool
         // std::vector<std::string> split(const std::string& input, const std::string& delimiter);
         void part_cmd(Client *client);
-        std::map<std::string, Channel*> get_channels();
+        std::map<std::string, Channel*>& get_channels();
     //   void  part_cmd(Client *client, Channel *channel);   //ayoub
+      void  command_not_found(Client *client);
       void  mode_cmd(Client *client);   //ayoub
       void  kick_cmd(Client *client);   //ayoub
       void  quit_cmd(Client *client);   //ayoub
