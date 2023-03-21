@@ -101,8 +101,25 @@ void Mediator::set_client(int fd, std::string &buffer) {
 }
 
 void Mediator::add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator) {
-    Client *client = new Client(fd, password, mediator);
+    Client *client = NULL;
+    if (this->__clients.find(fd) != this->__clients.end()) {
+        client = this->__clients.at(fd);
+    } else {
+        client = new Client(fd, password, mediator);
+        if (!client)
+            return ;
+        this->__clients.insert(std::make_pair(fd, client));
+    }
+    if (!client)
+        return ;
     client->update_client(buffer);
+}
+
+void  Mediator::add_client(int fd, std::string &password, Mediator *mediator, struct sockaddr &addr) {
+    Client *client = NULL;
+    client = new Client(fd, password, mediator, addr);
+    if (!client)
+        return ;
     this->__clients.insert(std::make_pair(fd, client));
 }
 
@@ -170,18 +187,18 @@ void Mediator::join_cmd(Client *client){
             channel->add_client(client);
             client->subscribe_to_channel(channel);
             this->__channels.insert(std::make_pair(*it, channel));
-            notify_clients_of_new_member(channel, client);
+            // notify_clients_of_new_member(channel, client);
             // client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
         } else {
             Channel *channel = this->__channels.at(*it);
             if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
                 channel->add_moderator(client->get_socket());
             }
-            if (channel->find_client(client->get_socket())) {
+            if (channel && channel->find_client(client->get_socket())) {
                 client->put_message(":ft_irc 480 " + client->get_nickname() +" :is already on channel");
                 return ;
             }
-            if (channel->get_mode()) {
+            if (channel && channel->get_mode()) {
                 if (channel->is_invited(client->get_socket())) {
                     if (!keys.empty() && j < (int)keys.size()) {
                         if (keys[j] == channel->get_key()) {
@@ -797,12 +814,15 @@ void Mediator::privmsg_cmd(Client *client) {
         return ;
     }
     std::vector<std::string> targets = split(client->__cmd[1], ',');
-    std::string message_to_be_sent = client->__cmd[2][0] == ':' ? client->__cmd[2].substr(1) : client->__cmd[2]; 
+    std::string message_to_be_sent = "";
+    message_to_be_sent += client->__cmd[2];
+    if (client->__cmd.size() > 3)
+        message_to_be_sent += " ";
     for (unsigned int i = 3; i < client->__cmd.size();++i) {
         message_to_be_sent += client->__cmd[i];
-        message_to_be_sent += " ";
+        if (i < client->__cmd.size() - 1)
+            message_to_be_sent += " ";
     }
-
     for (unsigned int i = 0;i < targets.size();++i) {
         if (targets[i][0] == '#') {
             if (this->__channels.find(targets[i]) == this->__channels.end()) {
@@ -865,11 +885,14 @@ void Mediator::notice_cmd(Client *client) {
     }
     std::vector<std::string> targets = split(client->__cmd[1], ',');
     std::string message_to_be_sent = "";
-    for (unsigned int i = 2; i < client->__cmd.size();++i) {
-        message_to_be_sent += client->__cmd[i];
+    message_to_be_sent += client->__cmd[2][0] == ':' ? client->__cmd[2].substr(1) : client->__cmd[2];
+    if (client->__cmd.size() > 3)
         message_to_be_sent += " ";
+    for (unsigned int i = 3; i < client->__cmd.size();++i) {
+        message_to_be_sent += client->__cmd[i];
+        if (i < client->__cmd.size() - 1)
+            message_to_be_sent += " ";
     }
-
     for (unsigned int i = 0;i < targets.size();++i) {
         if (targets[i][0] == '#') {
             if (this->__channels.find(targets[i]) == this->__channels.end()) {

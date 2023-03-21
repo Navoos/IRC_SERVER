@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <sys/socket.h>
 
 #define ERR_ALREADYREGISTERED "462"
 #define ERR_NEEDMOREPARAMS    "461"
@@ -49,6 +50,7 @@ class Mediator {
       bool  find_client(std::string &nick_name);
       void  set_client(int fd, std::string &buffer);
       void  add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator);
+      void  add_client(int fd, std::string &password, Mediator *mediator, struct sockaddr &addr);
       bool  search_channel(std::string name, std::map<std::string, Channel*>     __channels);
       void  notify_clients_of_new_member(Channel *channel, Client *client);
       std::string get_random_joke();

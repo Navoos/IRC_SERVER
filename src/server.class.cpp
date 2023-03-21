@@ -28,7 +28,7 @@ Server&  Server::get_instance(int socket, std::string &password) {
 
 void Server::run() {
   // server loop
-  struct sockaddr_storage remote_addr;
+  struct sockaddr remote_addr;
   socklen_t addrlen = sizeof remote_addr;
   int fd_count = 1;
   int client_fd = -1;
@@ -46,7 +46,9 @@ void Server::run() {
 		// for the server
 		if (this->__fds[i].fd == this->__socket)
 		{
-		  client_fd = accept(this->__socket, (sockaddr *)&remote_addr, &addrlen);
+          // TODO: when creating a new client use their hostname
+          addrlen = sizeof remote_addr;
+		  client_fd = accept(this->__socket, &remote_addr, &addrlen);
 		  if (client_fd < 0) {
 			perror("accept");
 		  } else {
@@ -56,6 +58,7 @@ void Server::run() {
 			n.fd = client_fd;
 			n.events = POLLIN;
 			this->__fds.push_back(n);
+            this->__mediator->add_client(client_fd, this->__password, this->__mediator, remote_addr);
 		  }
 		} else {
 		  memset(buf, 0, sizeof(buf));
@@ -72,15 +75,7 @@ void Server::run() {
 			--fd_count;
 		  } else {
 			std::string s_buffer(buf);
-            // std::cout << "{" << s_buffer << "}\n";
-			if (this->__mediator->find_client(this->__fds[i].fd)) {
-                // std::cout << "not new\n";
-                this->__mediator->set_client(this->__fds[i].fd, s_buffer);
-			} else {
-				// std::cerr << "Adding new client ..." << std::endl;
-                // std::cout << "mojoud\n";
-                this->__mediator->add_client(this->__fds[i].fd, this->__password, s_buffer, this->__mediator);
-			}
+            this->__mediator->set_client(this->__fds[i].fd, s_buffer);
 		  }
 		}
 	  }
