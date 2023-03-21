@@ -60,8 +60,18 @@ Client::Client(int fd, std::string &server_password, Mediator *mediator, struct 
     he = gethostbyaddr(&ip4_addr, sizeof(ip4_addr), AF_INET);
     if (!he)
         return ;
-    this->__hostname = std::string(he->h_name);
-    std::cout << "<" << this->__hostname << ">" << std::endl;
+    if (std::string(he->h_name) == "localhost") {
+        char hostname[MAXHOSTNAMELEN];
+        memset(hostname, 0, sizeof hostname);
+        if (gethostname(hostname, MAXHOSTNAMELEN) == -1) {
+            perror("gethostname");
+        } else {
+            this->__hostname = std::string(hostname);
+        }
+    } else {
+        this->__hostname = std::string(he->h_name);
+    }
+    // std::cout << "<" << this->__hostname << ">" << std::endl;
 
 }
 
@@ -85,10 +95,6 @@ void    Client::update_client(std::string &str) {
         }
         if (!this->__cmd.empty()) {
             // HOUSSAM : execute the command here
-            std::cout << "<";
-            for (auto &i : this->__cmd)
-                std::cout << i << " ";
-            std::cout << ">\n";
             this->execute(this->__mediator);
             this->__cmd.clear();
         }

@@ -187,7 +187,7 @@ void Mediator::join_cmd(Client *client){
             channel->add_client(client);
             client->subscribe_to_channel(channel);
             this->__channels.insert(std::make_pair(*it, channel));
-            // notify_clients_of_new_member(channel, client);
+            notify_clients_of_new_member(channel, client);
             // client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
         } else {
             Channel *channel = this->__channels.at(*it);
