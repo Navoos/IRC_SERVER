@@ -660,7 +660,7 @@ void    Mediator::topic_cmd(Client *client){
                         }
                         client->put_message(":" + client->get_nickname() + " " + "TOPIC " + channel->get_name() + " " + topic);
                     } else {
-                        client->put_message(":ft_irc don't have mode topic");
+                       client->put_message(":" + client->get_nickname() + " " + "TOPIC " + channel->get_name() + " :don't have privileges");
                         return ;
                     }
                 }
