@@ -5,7 +5,7 @@ Socket::Socket(const std::string port) : __port(port) {
   int reusable = 1;
   memset(&hints, 0, sizeof hints);
   res = 0x0;
-  hints.ai_family = AF_UNSPEC;
+  hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_flags = AI_PASSIVE;
   if (getaddrinfo(0x0, this->__port.c_str(), &(hints), &(res)) != 0)
@@ -31,7 +31,7 @@ Socket::Socket(const std::string port, const std::string address) : __port(port)
   struct addrinfo *res, hints, *i;
   int reusable = 1;
   memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC;
+  hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_STREAM;
   if (getaddrinfo(this->__address.c_str(), this->__port.c_str(), &hints, &res) != 0)
     exit(EXIT_FAILURE);

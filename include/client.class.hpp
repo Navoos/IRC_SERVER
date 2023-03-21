@@ -5,6 +5,7 @@
 #include <iostream>
 #include "server.class.hpp"
 #include "mediator.class.hpp"
+#include <sys/socket.h>
 
 class Client {
 	private:
@@ -20,8 +21,10 @@ class Client {
 		std::string						__nick;
 		std::string						__user;
         bool                            __voice;
+        std::string                     __hostname;
 	public:
 		Client(int fd, std::string &password, Mediator *mediator);
+		Client(int fd, std::string &password, Mediator *mediator, struct sockaddr &addr);
 		bool    		is_connected();
 		bool    		is_accepted(); 
 		bool    		put_message(std::string message);
@@ -39,6 +42,7 @@ class Client {
     	Channel*    	get_channel(std::string &name);
         bool            has_voice();
 		void			erase_channel(std::string &channel);
+        std::string     get_hostname();
 };
 
 #endif

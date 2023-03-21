@@ -101,8 +101,25 @@ void Mediator::set_client(int fd, std::string &buffer) {
 }
 
 void Mediator::add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator) {
-    Client *client = new Client(fd, password, mediator);
+    Client *client = NULL;
+    if (this->__clients.find(fd) != this->__clients.end()) {
+        client = this->__clients.at(fd);
+    } else {
+        client = new Client(fd, password, mediator);
+        if (!client)
+            return ;
+        this->__clients.insert(std::make_pair(fd, client));
+    }
+    if (!client)
+        return ;
     client->update_client(buffer);
+}
+
+void  Mediator::add_client(int fd, std::string &password, Mediator *mediator, struct sockaddr &addr) {
+    Client *client = NULL;
+    client = new Client(fd, password, mediator, addr);
+    if (!client)
+        return ;
     this->__clients.insert(std::make_pair(fd, client));
 }
 
@@ -119,6 +136,17 @@ std::vector<std::string> split(const std::string &s, char delim) {
             result.push_back(item); 
     }
     return result;
+}
+
+
+void Mediator::notify_clients_of_new_member(Channel *channel, Client *client) {
+    std::map<int, Client*> all_clients = channel->get_all_client();
+    for (std::map<int, Client*>::iterator it = all_clients.begin(); it != all_clients.end(); ++it) {
+        std::string msg = ":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " JOIN " + channel->get_name() + "\r\n";
+        if (send(it->second->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
+            perror("send");
+        }
+   }
 }
 
 void Mediator::join_cmd(Client *client){
@@ -159,23 +187,25 @@ void Mediator::join_cmd(Client *client){
             channel->add_client(client);
             client->subscribe_to_channel(channel);
             this->__channels.insert(std::make_pair(*it, channel));
-            client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
+            notify_clients_of_new_member(channel, client);
+            // client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
         } else {
             Channel *channel = this->__channels.at(*it);
             if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
                 channel->add_moderator(client->get_socket());
             }
-            if (channel->find_client(client->get_socket())) {
+            if (channel && channel->find_client(client->get_socket())) {
                 client->put_message(":ft_irc 480 " + client->get_nickname() +" :is already on channel");
                 return ;
             }
-            if (channel->get_mode()) {
+            if (channel && channel->get_mode()) {
                 if (channel->is_invited(client->get_socket())) {
                     if (!keys.empty() && j < (int)keys.size()) {
                         if (keys[j] == channel->get_key()) {
                                 channel->add_client(client);
                                 client->subscribe_to_channel(channel);
-                                client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
+                                notify_clients_of_new_member(channel, client);
+                                // client->put_message(":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " JOIN " + channel->get_name());
                         } else {
                             client->put_message(":ft_irc 475 " + client->get_nickname() + " " + channel->get_name() + " :Cannot join channel (+k)");
                         }
@@ -188,14 +218,16 @@ void Mediator::join_cmd(Client *client){
                         if (!keys.empty() && j < (int)keys.size() && keys[j] == channel->get_key()) {
                                 channel->add_client(client);
                                 client->subscribe_to_channel(channel);
-                                client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
+                                notify_clients_of_new_member(channel, client);
+                                // client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
                         } else {
                             client->put_message(":ft_irc 475 " + client->get_nickname() + " " + channel->get_name() + " :Cannot join channel (+k)");
                         }
                         } else {
                             channel->add_client(client);
                             client->subscribe_to_channel(channel);
-                            client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
+                            notify_clients_of_new_member(channel, client);
+                            // client->put_message(":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " JOIN " + channel->get_name());
                 }
             }
         }
@@ -653,12 +685,14 @@ void    Mediator::topic_cmd(Client *client){
                                 topic += client->__cmd[2].substr(1);
                                 for (unsigned int i = 3;i < client->__cmd.size();++i) {
                                     topic += client->__cmd[i];
+                                    if (i < client->__cmd.size() - 1)
+                                        topic += " ";
                                 }
                             }
                             else
                                 topic = client->__cmd[2];
                         }
-                        client->put_message(":" + client->get_nickname() + " " + "TOPIC " + channel->get_name() + " " + topic);
+                        client->put_message(":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " " + "TOPIC " + channel->get_name() + " " + topic);
                     } else {
                        client->put_message(":" + client->get_nickname() + " " + "TOPIC " + channel->get_name() + " :don't have privileges");
                         return ;
@@ -781,11 +815,14 @@ void Mediator::privmsg_cmd(Client *client) {
     }
     std::vector<std::string> targets = split(client->__cmd[1], ',');
     std::string message_to_be_sent = "";
-    for (unsigned int i = 2; i < client->__cmd.size();++i) {
-        message_to_be_sent += client->__cmd[i];
+    message_to_be_sent += client->__cmd[2];
+    if (client->__cmd.size() > 3)
         message_to_be_sent += " ";
+    for (unsigned int i = 3; i < client->__cmd.size();++i) {
+        message_to_be_sent += client->__cmd[i];
+        if (i < client->__cmd.size() - 1)
+            message_to_be_sent += " ";
     }
-
     for (unsigned int i = 0;i < targets.size();++i) {
         if (targets[i][0] == '#') {
             if (this->__channels.find(targets[i]) == this->__channels.end()) {
@@ -799,7 +836,7 @@ void Mediator::privmsg_cmd(Client *client) {
                     continue;
                 if (!channel->is_moderated()) {
                     // send normally
-                    std::string msg = ":" + client->get_nickname() + " PRIVMSG " + channel->get_name() + " " + message_to_be_sent + "\r\n";
+                    std::string msg = ":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " PRIVMSG " + channel->get_name() + " " + message_to_be_sent + "\r\n";
                     for (std::map<int, Client *>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end();++it) {
                         if (send(it->first, msg.c_str(), msg.length(), 0) == -1)
                         {
@@ -828,7 +865,7 @@ void Mediator::privmsg_cmd(Client *client) {
        } else {
            Client *send_client = get_client(targets[i]);
            if (send_client) {
-                std::string msg = ":" + client->get_nickname() + " PRIVMSG " + send_client->get_nickname() + " " + message_to_be_sent + "\r\n";
+                std::string msg = ":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " PRIVMSG " + send_client->get_nickname() + " " + message_to_be_sent + "\r\n";
                 if (send(send_client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
                     perror("send");
                     continue;
@@ -848,11 +885,14 @@ void Mediator::notice_cmd(Client *client) {
     }
     std::vector<std::string> targets = split(client->__cmd[1], ',');
     std::string message_to_be_sent = "";
-    for (unsigned int i = 2; i < client->__cmd.size();++i) {
-        message_to_be_sent += client->__cmd[i];
+    message_to_be_sent += client->__cmd[2][0] == ':' ? client->__cmd[2].substr(1) : client->__cmd[2];
+    if (client->__cmd.size() > 3)
         message_to_be_sent += " ";
+    for (unsigned int i = 3; i < client->__cmd.size();++i) {
+        message_to_be_sent += client->__cmd[i];
+        if (i < client->__cmd.size() - 1)
+            message_to_be_sent += " ";
     }
-
     for (unsigned int i = 0;i < targets.size();++i) {
         if (targets[i][0] == '#') {
             if (this->__channels.find(targets[i]) == this->__channels.end()) {
@@ -864,7 +904,7 @@ void Mediator::notice_cmd(Client *client) {
                     continue;
                 if (!channel->is_moderated()) {
                     // send normally
-                    std::string msg = ":" + client->get_nickname() + " NOTICE " + channel->get_name() + " " + message_to_be_sent + "\r\n";
+                    std::string msg = ":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " NOTICE " + channel->get_name() + " " + message_to_be_sent + "\r\n";
                     for (std::map<int, Client *>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end();++it) {
                         if (send(it->first, msg.c_str(), msg.length(), 0) == -1)
                         {
@@ -889,7 +929,7 @@ void Mediator::notice_cmd(Client *client) {
        } else {
            Client *send_client = get_client(targets[i]);
            if (send_client) {
-                std::string msg = ":" + client->get_nickname() + " NOTICE " + send_client->get_nickname() + " " + message_to_be_sent + "\r\n";
+                std::string msg = ":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " NOTICE " + send_client->get_nickname() + " " + message_to_be_sent + "\r\n";
                 if (send(send_client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
                     perror("send");
                     continue;

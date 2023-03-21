@@ -7,6 +7,10 @@
 #include <sstream>
 #include <sys/socket.h>
 #include <sys/param.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/types.h>
 
 bool		Client::is_connected(void) { 
     return __connected; }
@@ -33,6 +37,42 @@ Client::Client(int fd, std::string &server_password, Mediator *mediator) : __ser
     this->__connected = false;
     this->__accepted = false;
     this->__voice = false;
+    char hostname[MAXHOSTNAMELEN];
+    memset(hostname, 0, sizeof hostname);
+    if (gethostname(hostname, MAXHOSTNAMELEN) == -1) {
+        perror("gethostname");
+    } else {
+        this->__hostname = std::string(hostname);
+    }
+}
+
+Client::Client(int fd, std::string &server_password, Mediator *mediator, struct sockaddr &addr) :  __server_password(server_password), __fd(fd), __mediator(mediator) {
+    char ip4[INET_ADDRSTRLEN];
+    struct in_addr ip4_addr;
+    struct hostent *he;
+    this->__connected = false;
+    this->__accepted = false;
+    this->__voice = false;
+    inet_ntop(AF_INET, &((sockaddr_in *)&addr)->sin_addr, ip4, INET_ADDRSTRLEN);
+    if (inet_pton(AF_INET, ip4, &ip4_addr) == -1) {
+        perror("inet_pton");
+    }
+    he = gethostbyaddr(&ip4_addr, sizeof(ip4_addr), AF_INET);
+    if (!he)
+        return ;
+    if (std::string(he->h_name) == "localhost") {
+        char hostname[MAXHOSTNAMELEN];
+        memset(hostname, 0, sizeof hostname);
+        if (gethostname(hostname, MAXHOSTNAMELEN) == -1) {
+            perror("gethostname");
+        } else {
+            this->__hostname = std::string(hostname);
+        }
+    } else {
+        this->__hostname = std::string(he->h_name);
+    }
+    // std::cout << "<" << this->__hostname << ">" << std::endl;
+
 }
 
 void    Client::update_client(std::string &str) {
@@ -67,6 +107,10 @@ bool Client::has_voice() {
     return this->__voice;
 }
 
+std::string Client::get_hostname() {
+    return this->__hostname;
+}
+
 bool  Client::put_message(std::string message)
 {
     std::stringstream  msg;
@@ -87,16 +131,7 @@ bool    Client::check_connection(void){
     if (this->get_nickname().empty() || this->get_username().empty() || !this->is_accepted())
         return false;
     set_connected(true);
-    char hostname[MAXHOSTNAMELEN];
-    memset(hostname, 0, sizeof hostname);
-    if (gethostname(hostname, MAXHOSTNAMELEN) == -1) {
-        perror("gethotname");
-        put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + "\n");
-        // put_message(RPL_WELCOME, ":Welcome to the Internet Relay Network, " + __nick + "\n");
-    }
-    else 
-        put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + " [ ! " + __user + "@" + hostname + "]\n");
-        // put_message(RPL_WELCOME, ":Welcome to the Internet Relay Network, " + __nick + " [ ! " + __user + "@" + hostname + "]\n");
+    put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + " [!" + __user + "@" + this->get_hostname() + "]");
     return true;
 }
 
