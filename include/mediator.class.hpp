@@ -3,6 +3,11 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstdio>
+#include <unistd.h>
 
 #define ERR_ALREADYREGISTERED "462"
 #define ERR_NEEDMOREPARAMS    "461"
@@ -24,34 +29,41 @@ class Client;
 class Server;
 
 class Mediator {
-    public:
-        Server get_server();
-        void pass_cmd(Client *client, Server server);
-        void  user_cmd(Client *client);
-        void  nick_cmd(Client *client);
-        void  join_cmd(Client *client);
-        void part_cmd(Client *client);
-        std::map<std::string, Channel*>& get_channels();
-        void command_not_found(Client *client);
-        void  mode_cmd(Client *client);
-        void  kick_cmd(Client *client);
-        void  quit_cmd(Client *client);
-        void  topic_cmd(Client *client);
-        void  invite_cmd(Client *client);
-        void  delete_client(int fd);
-        Client*   get_client(std::string &nick_name);
-        bool  find_client(int fd);
-        bool  find_client(std::string &nick_name);
-        void  set_client(int fd, std::string &buffer);
-        void  add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator);
-        bool  search_channel(std::string name, std::map<std::string, Channel*>     __channels);
-        // todo: add invit command
-        // todo: add topic command
-        // HOUSSAM: add additional commands here
-        Mediator(Server& server);
-    private:
-        std::map<int, Client*>            __clients;
-        std::map<std::string, Channel*>   __channels;
-        Server                            __server;
+  public:
+      Server get_server();
+      void pass_cmd(Client *client, Server server);   // houssam
+      void  user_cmd(Client *client);   // houssam
+      void  nick_cmd(Client *client);   // houssam
+      void  join_cmd(Client *client);   // houssam
+      void  notice_cmd(Client *client);
+      void part_cmd(Client *client);
+      std::map<std::string, Channel*>& get_channels();
+      void  time_cmd(Client *client);
+      void  bot_command(Client *client);
+      void  command_not_found(Client *client);
+      void  mode_cmd(Client *client);   //ayoub
+      void  kick_cmd(Client *client);   //ayoub
+      void  quit_cmd(Client *client);   //ayoub
+      void  topic_cmd(Client *client);
+      void  invite_cmd(Client *client);
+      void  privmsg_cmd(Client *client);
+      void  delete_client(int fd);
+      Client*   get_client(std::string &nick_name);
+      bool  find_client(int fd);
+      bool  find_client(std::string &nick_name);
+      void  set_client(int fd, std::string &buffer);
+      void  add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator);
+      bool  search_channel(std::string name, std::map<std::string, Channel*>     __channels);
+      void  notify_clients_of_new_member(Channel *channel, Client *client);
+      std::string get_random_joke();
+      void command_bot(Client *client);
+      // todo: add invit command
+      // todo: add topic command
+      // HOUSSAM: add additional commands here
+      Mediator(Server& server);
+  private:
+      std::map<int, Client*>            __clients;
+      std::map<std::string, Channel*>   __channels;
+      Server                            __server;
 };
 #endif

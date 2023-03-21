@@ -6,7 +6,9 @@ Channel::Channel(std::string name, std::string topic, std::string key){
     __topic = topic;
     __key = key;
     __mode = false;
-    // __modetopic = false;
+    __moderated = false;
+    __modeinvite = false;
+    __modetopic = false;
 
 }
 Channel::~Channel(){};
@@ -135,4 +137,12 @@ void    Channel::set_modekey(bool key) {
 
 bool    Channel::get_modetopic() {
     return __modetopic;
+}
+
+bool    Channel::get_modeinvite() {
+    return __modeinvite;
+}
+
+bool Channel::is_moderated() {
+    return __moderated;
 }

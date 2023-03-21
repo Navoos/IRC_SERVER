@@ -32,6 +32,14 @@ int			Client::get_socket(void) const { return __fd; }
 Client::Client(int fd, std::string &server_password, Mediator *mediator) : __server_password(server_password), __fd(fd), __mediator(mediator) {
     this->__connected = false;
     this->__accepted = false;
+    this->__voice = false;
+    char hostname[MAXHOSTNAMELEN];
+    memset(hostname, 0, sizeof hostname);
+    if (gethostname(hostname, MAXHOSTNAMELEN) == -1) {
+        perror("gethostname");
+    } else {
+        this->__hostname = std::string(hostname);
+    }
 }
 
 void    Client::update_client(std::string &str) {
@@ -62,6 +70,14 @@ void    Client::update_client(std::string &str) {
     }
 }
 
+bool Client::has_voice() {
+    return this->__voice;
+}
+
+std::string Client::get_hostname() {
+    return this->__hostname;
+}
+
 bool  Client::put_message(std::string message)
 {
     std::stringstream  msg;
@@ -79,19 +95,10 @@ bool  Client::put_message(std::string message)
 }
 
 bool    Client::check_connection(void){
-    if ( get_nickname().empty() || get_username().empty() || is_connected() || !is_accepted())
+    if (this->get_nickname().empty() || this->get_username().empty() || !this->is_accepted())
         return false;
     set_connected(true);
-    char hostname[MAXHOSTNAMELEN];
-    memset(hostname, 0, sizeof hostname);
-    if (gethostname(hostname, MAXHOSTNAMELEN) == -1) {
-        perror("gethotname");
-        put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + "\n");
-        // put_message(RPL_WELCOME, ":Welcome to the Internet Relay Network, " + __nick + "\n");
-    }
-    else 
-        put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + " [ ! " + __user + "@" + hostname + "]\n");
-        // put_message(RPL_WELCOME, ":Welcome to the Internet Relay Network, " + __nick + " [ ! " + __user + "@" + hostname + "]\n");
+    put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + " [ !" + __user + "@" + this->get_hostname() + "]");
     return true;
 }
 
@@ -129,19 +136,34 @@ void   Client::execute(Mediator *mediator){
         mediator->user_cmd(this);
     else if (__cmd[0] == "NICK" || __cmd[0] == "nick")
         mediator->nick_cmd(this);
-    else if (__cmd[0] == "JOIN" || __cmd[0] == "join")
-        mediator->join_cmd(this);
-    else if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
-        mediator->topic_cmd(this);
-    //deadpool
-    else if (__cmd[0] == "PART" || __cmd[0] == "part")
-        mediator->part_cmd(this);
-    else if (__cmd[0] == "KICK" || __cmd[0] == "kick")
-        mediator->kick_cmd(this);
-    else if (__cmd[0] == "MODE" || __cmd[0] == "mode")
-        mediator->mode_cmd(this);
-    else if (__cmd[0] == "QUIT" || __cmd[0] == "quit")
-        mediator->quit_cmd(this);
-    else
-        mediator->command_not_found(this);
+    else if (__cmd[0] == "/joke" || __cmd[0] == "/JOKE")
+        mediator->command_bot(this);
+    else if (__cmd[0] == "/time" || __cmd[0] == "/TIME")
+        mediator->time_cmd(this);
+    else if (this->is_connected()) {
+        if (__cmd[0] == "JOIN" || __cmd[0] == "join")
+            mediator->join_cmd(this);
+        else if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
+            mediator->topic_cmd(this);
+        else if (__cmd[0] == "PART" || __cmd[0] == "part")
+            mediator->part_cmd(this);
+        else if (__cmd[0] == "KICK" || __cmd[0] == "kick")
+            mediator->kick_cmd(this);
+        else if (__cmd[0] == "TOPIC" || __cmd[0] == "topic")
+            mediator->topic_cmd(this);
+        else if (__cmd[0] == "invite" || __cmd[0] == "INVITE")
+            mediator->invite_cmd(this);
+        else if (__cmd[0] == "privmsg" || __cmd[0] == "PRIVMSG")
+            mediator->privmsg_cmd(this);
+        else if (__cmd[0] == "MODE" || __cmd[0] == "mode")
+            mediator->mode_cmd(this);
+        else if (__cmd[0] == "QUIT" || __cmd[0] == "quit")
+            mediator->quit_cmd(this);
+        else if (__cmd[0] == "NOTICE" || __cmd[0] == "notice")
+            mediator->notice_cmd(this);
+        else 
+            mediator->command_not_found(this);
+    } else {
+        this->put_message(":ft_irc 910 " + this->get_nickname() + ":You have to be registered");
+    }
 }
