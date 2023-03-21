@@ -101,8 +101,25 @@ void Mediator::set_client(int fd, std::string &buffer) {
 }
 
 void Mediator::add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator) {
-    Client *client = new Client(fd, password, mediator);
+    Client *client = NULL;
+    if (this->__clients.find(fd) != this->__clients.end()) {
+        client = this->__clients.at(fd);
+    } else {
+        client = new Client(fd, password, mediator);
+        if (!client)
+            return ;
+        this->__clients.insert(std::make_pair(fd, client));
+    }
+    if (!client)
+        return ;
     client->update_client(buffer);
+}
+
+void  Mediator::add_client(int fd, std::string &password, Mediator *mediator, struct sockaddr &addr) {
+    Client *client = NULL;
+    client = new Client(fd, password, mediator, addr);
+    if (!client)
+        return ;
     this->__clients.insert(std::make_pair(fd, client));
 }
 
@@ -170,18 +187,18 @@ void Mediator::join_cmd(Client *client){
             channel->add_client(client);
             client->subscribe_to_channel(channel);
             this->__channels.insert(std::make_pair(*it, channel));
-            notify_clients_of_new_member(channel, client);
+            // notify_clients_of_new_member(channel, client);
             // client->put_message(":" + client->get_nickname() + " JOIN " + channel->get_name());
         } else {
             Channel *channel = this->__channels.at(*it);
             if (channel && channel->get_all_client().size() == 0) { // yaakoub add this lines
                 channel->add_moderator(client->get_socket());
             }
-            if (channel->find_client(client->get_socket())) {
+            if (channel && channel->find_client(client->get_socket())) {
                 client->put_message(":ft_irc 480 " + client->get_nickname() +" :is already on channel");
                 return ;
             }
-            if (channel->get_mode()) {
+            if (channel && channel->get_mode()) {
                 if (channel->is_invited(client->get_socket())) {
                     if (!keys.empty() && j < (int)keys.size()) {
                         if (keys[j] == channel->get_key()) {
@@ -236,7 +253,7 @@ void Mediator::part_cmd(Client *client) {
     } else {
         __channels = split(client->__cmd[1], ',');
         if (__channels.size() == 0) {
-            error = ":ft_irc 911 " + client->get_nickname() + " PART :you should write at least one channel.";
+            error = ":ft_irc 000 " + client->get_nickname() + " PART :you should write at least one channel.";
             client->put_message(error);
             return ;
         }
@@ -250,7 +267,7 @@ void Mediator::part_cmd(Client *client) {
                 continue ;
             } else {
                 if (__channels[i][1] == '\0') {
-                    error = ":ft_irc 913 " + client->get_nickname() + " PART :you need name of channel.";
+                    error = ":ft_irc 002 " + client->get_nickname() + " PART :you need name of channel.";
                     client->put_message(error);
                     continue ;
                 }
@@ -315,12 +332,12 @@ void Mediator::kick_cmd(Client *client) {
         __channels = split(client->__cmd[1], ',');
         clients = split(client->__cmd[2], ',');
         if (__channels.size() == 0) {
-            error = ":ft_irc 911 " + client->get_nickname() + " KICK :you should write at least one channel.";
+            error = ":ft_irc 000 " + client->get_nickname() + " KICK :you should write at least one channel.";
             client->put_message(error);
             return ;
         }
         if (clients.size() == 0) {
-            error = ":ft_irc 912 " + client->get_nickname() + " KICK :you should write at least one user.";
+            error = ":ft_irc 001 " + client->get_nickname() + " KICK :you should write at least one user.";
             client->put_message(error);
             return ;
         }
@@ -328,7 +345,7 @@ void Mediator::kick_cmd(Client *client) {
             if (clients[3][0] == ':')
                 comment += *it_comment + " ";
             else {
-                error = ":ft_irc 914 " + client->get_nickname() + " KICK :you should write \':\' before the reason.";
+                error = ":ft_irc 002 " + client->get_nickname() + " KICK :you should write \':\' before the reason.";
                 client->put_message(error);
                 return ;
             }
@@ -336,18 +353,18 @@ void Mediator::kick_cmd(Client *client) {
         for (std::vector<std::string>::iterator it = __channels.begin(); it != __channels.end(); ++it, ++i) {
             Channel *channel = client->get_channel(*it);
             if (__channels[i][0] != '#') {
-                error = ":ft_irc 476 " + *it + "KICK :Bad channel mask";
+                error = ":ft_irc 476 " + *it + " :Bad channel mask";
                 client->put_message(error);
                 continue ;
             } else {
                 if (__channels[i][1] == '\0') {
-                    error = ":ft_irc 913 " + client->get_nickname() + "KICK :You need name of channel.";
+                    error = ":ft_irc 002 " + client->get_nickname() + " :You need name of channel.";
                     client->put_message(error);
                     continue ;
                 }
                 if (this->__channels.find(*it) != this->__channels.end()) {
                     if (!channel) {
-                        error = ":ft_irc 442 " + client->get_nickname() + " " + *it + "KICK :You're not on that channel.";
+                        error = ":ft_irc 442 " + client->get_nickname() + " " + *it + " :You're not on that channel.";
                         client->put_message(error);
                         continue ;
                     }
@@ -374,29 +391,29 @@ void Mediator::kick_cmd(Client *client) {
                                         for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); ++it_client) {
                                             if (channel->get_all_client().size() > 0 && channel->get_moderators().size() == 0) {
                                                 channel->add_moderator(it_client->second->get_socket());
-                                                message = ":ft_irc " + it_client->second->get_nickname() + " is the new operator of channel " + __channels[i] + ".";
+                                                message = ":ft_irc    ; Command to kick " + it_client->second->get_nickname() + " is the new operator of channel " + __channels[i] + ".";
                                                 it_client->second->put_message(message);
                                             }
                                         }
                                     }
                                 } else {
-                                    error = ":ft_irc 441 " + client->get_nickname() + " " + *it_clients + " " + channel->get_name() + "KICK :They aren't on that channel.";
+                                    error = ":ft_irc 441 " + client->get_nickname() + " " + *it_clients + " " + channel->get_name() + " :They aren't on that channel.";
                                     client->put_message(error);
                                     continue ;
                                 }
                             }
                         } else {
-                            error = ":ft_irc 482 " + client->get_nickname() + " " + channel->get_name() + "KICK :You're not channel operator.";
+                            error = ":ft_irc 482 " + client->get_nickname() + " " + channel->get_name() + " :You're not channel operator.";
                             client->put_message(error);
                             continue ;
                         }
                     } else {
-                        error = ":ft_irc 442 " + client->get_nickname() + " " + channel->get_name() + "KICK :You're not on that channel.";
+                        error = ":ft_irc 442 " + client->get_nickname() + " " + channel->get_name() + " :You're not on that channel.";
                         client->put_message(error);
                         continue ;
                     }
                 } else {
-                    error = ":ft_irc 403 " + client->get_nickname() + " " + *it + "KICK :No such channel.";
+                    error = ":ft_irc 403 " + client->get_nickname() + " " + *it + " :No such channel.";
                     client->put_message(error);
                     continue ;
                 }
@@ -426,13 +443,13 @@ void    Mediator::mode_cmd(Client *client) {
     }
     if (target[0] == '#') {
         if (!this->search_channel(target, this->__channels)) {
-            error = ":ft_irc 403 " + client->get_nickname() + " " + target + " MODE :No such channel.";
+            error = ":ft_irc 403 " + client->get_nickname() + " " + target + " :No such channel.";
             client->put_message(error);
             return ;
         }
         Channel *channel = client->get_channel(target);
         if (!channel) {
-            error = ":ft_irc 442 " + client->get_nickname() + " " + target + " MODE :You're not on that channel.";
+            error = ":ft_irc 442 " + client->get_nickname() + " " + target + " :You're not on that channel.";
             client->put_message(error);
             return ;
         }
@@ -444,15 +461,16 @@ void    Mediator::mode_cmd(Client *client) {
                             channel->set_modeinvite(true);
                         } else if (modestring[1] == 't') {
                             channel->set_modetopic(true);
+                            std::cout << channel->get_modetopic() << std::endl;
                         } else if (modestring[1] == 'k') {
                             if (client->__cmd.size() == 4) {
                                 channel->set_modekey(true);
                                 channel->set_key(key);
-                                message = ":ft_irc " + channel->get_name() + " MODE (+k):Set the channel key to " + key + ".";
+                                message = ":ft_irc " + channel->get_name() + " +k :Set the channel key to " + key + ".";
                                 client->put_message(message);
                                 return ;
                             } else {
-                                error = ":ft_irc 472 " + client->get_nickname() + " MODE (+k):Is unknown mode char to me.";
+                                error = ":ft_irc 472 " + client->get_nickname() + " +k :Is unknown mode char to me.";
                                 client->put_message(error);
                                 return ;
                             }
@@ -462,26 +480,26 @@ void    Mediator::mode_cmd(Client *client) {
                                         if (!channel->find_operator(channel->get_client(user))) {
                                             channel->add_moderator(channel->get_client(user));
                                             for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); it_client++) {
-                                                message = ":ft_irc " + client->get_nickname() + " MODE (+o):Set the operator to " + user + ".";
+                                                message = ":ft_irc " + client->get_nickname() + " +o :Set the operator to " + user + ".";
                                                 it_client->second->put_message(message);
                                             }
                                         } else {
-                                            error = ":ft_irc 915 " + target + " MODE (+o):Is a operator.";
+                                            error = ":ft_irc 000 " + target + " :Is a operator.";
                                             client->put_message(error);
                                             return ;
                                         }
                                     } else {
-                                        error = ":ft_irc 401 " + client->get_nickname() + " " + target + " MODE (+o):No such nick/channel.";
+                                        error = ":ft_irc 401 " + client->get_nickname() + " " + target + " :No such nick/channel.";
                                         client->put_message(error);
                                         return ;
                                     }
                                 } else {
-                                    error = ":ft_irc 912 " + client->get_nickname() + " MODE (+o):You should write at least one user.";
+                                    error = ":ft_irc 002 :You should write a client.";
                                     client->put_message(error);
                                     return ;
                                 }
-                        } else {
-                            error = ":ft_irc 501 " + client->get_nickname() + " MODE (" + modestring + "):Unknown MODE flag.";
+                            } else {
+                            error = ":ft_irc 501 " + client->get_nickname() + " :Unknown MODE flag.";
                             client->put_message(error);
                             return ;
                         }
@@ -492,7 +510,7 @@ void    Mediator::mode_cmd(Client *client) {
                             channel->set_modetopic(false);
                         } else if (modestring[1] == 'k') {
                             if (!channel->get_key().empty()) {
-                                message = ":ft_irc " + channel->get_name() + " MODE (-k):Remove the channel key from " + channel->get_name() + ".";
+                                message = ":ft_irc " + channel->get_name() + " -k :Remove the channel key from " + channel->get_name() + ".";
                                 client->put_message(message);
                             }
                             channel->set_modekey(false);
@@ -504,37 +522,37 @@ void    Mediator::mode_cmd(Client *client) {
                                         if (channel->find_operator(channel->get_client(user))) {
                                             channel->delete_moderator(channel->get_client(user));
                                             for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); it_client++) {
-                                                message = ":ft_irc " + client->get_nickname() + " MODE (-o):Remove the operator from " + user + ".";
+                                                message = ":ft_irc " + client->get_nickname() + " -o :Remove the operator from " + user + ".";
                                                 it_client->second->put_message(message);
                                             }
                                         } else {
-                                            error = ":ft_irc 916 " + user + " MODE (-o):Is not a operator.";
+                                            error = ":ft_irc 000 " + user + " :Is not a operator.";
                                             client->put_message(error);
                                             return ;
                                         }
                                     } else {
-                                        error = ":ft_irc 401 " + client->get_nickname() + " " + user + " MODE (-o):No such nick/channel.";
+                                        error = ":ft_irc 401 " + client->get_nickname() + " " + user + " :No such nick/channel.";
                                         client->put_message(error);
                                         return ;
                                     }
                                 } else {
-                                    error = ":ft_irc 912 " + client->get_nickname() + " MODE (-o):You should write at least one user.";
+                                    error = ":ft_irc 002 :You should write a client.";
                                     client->put_message(error);
                                     return ;
                                 }
                             } else {
-                            error = ":ft_irc 501 " + client->get_nickname() + " MODE (" + modestring + "):Unknown MODE flag.";
+                            error = ":ft_irc 501 " + client->get_nickname() + " :Unknown MODE flag.";
                             client->put_message(error);
                             return ;
                         }
                     } else {
-                        error = ":ft_irc 501 " + client->get_nickname() + " MODE (" + modestring + ") :Unknown MODE flag.";
+                        error = ":ft_irc 501 " + client->get_nickname() + " :Unknown MODE flag.";
                         client->put_message(error);
                         return ;
                     }
                 }
             } else {
-                error = ":ft_irc 482 " + client->get_nickname() + " " + channel->get_name() + " MODE :You're not channel operator.";
+                error = ":ft_irc 482 " + client->get_nickname() + " " + channel->get_name() + " :You're not channel operator.";
                 client->put_message(error);
                 return ;
             }
@@ -549,11 +567,11 @@ void    Mediator::mode_cmd(Client *client) {
                                 if (!it->second->find_operator(it->second->get_client(target))) {
                                     it->second->add_moderator(it->second->get_client(target));
                                     for (std::map<int, Client*>::iterator it_client = it->second->get_all_client().begin(); it_client != it->second->get_all_client().end(); it_client++) {
-                                        message = ":ft_irc " + client->get_nickname() + " MODE (+o):Set the operator to " + target + ".";
+                                        message = ":ft_irc " + client->get_nickname() + " +o :Set the operator to " + target + ".";
                                         it_client->second->put_message(message);
                                     }
                                 } else {
-                                    error = ":ft_irc 915 " + target + " MODE (+o):Is a operator.";
+                                    error = ":ft_irc 000 " + target + " :Is a operator.";
                                     client->put_message(error);
                                     return ;
                                 }
@@ -561,36 +579,36 @@ void    Mediator::mode_cmd(Client *client) {
                                 if (it->second->find_operator(it->second->get_client(target))) {
                                     it->second->delete_moderator(it->second->get_client(target));
                                     for (std::map<int, Client*>::iterator it_client = it->second->get_all_client().begin(); it_client != it->second->get_all_client().end(); it_client++) {
-                                        message = ":ft_irc " + client->get_nickname() + " MODE (-o):Remove the operator from " + target + ".";
+                                        message = ":ft_irc " + client->get_nickname() + " -o :Remove the operator from " + target + ".";
                                         it_client->second->put_message(message);
                                     }
                                 } else {
-                                    error = ":ft_irc 916 " + target + " MODE (-o):Is not a operator.";
+                                    error = ":ft_irc 001 " + target + " :Is not a operator.";
                                     client->put_message(error);
                                     return ;
                                 }
                             } else {
-                                error = ":ft_irc 501 " + client->get_nickname() + " MODE (" + modestring + "):Unknown MODE flag.";
+                                error = ":ft_irc 501 " + client->get_nickname() + " :Unknown MODE flag.";
                                 client->put_message(error);
                                 return ;
                             }
                         } else {
-                            error = ":ft_irc 401 " + client->get_nickname() + " " + target + " MODE :No such nick/channel.";
+                            error = ":ft_irc 401 " + client->get_nickname() + " " + target + " :No such nick/channel.";
                             client->put_message(error);
                             return ;
                         }
                     } else {
-                        error = ":ft_irc 482 " + client->get_nickname() + " " + it->second->get_name() + " MODE :You're not channel operator.";
+                        error = ":ft_irc 482 " + client->get_nickname() + " " + it->second->get_name() + " :You're not channel operator.";
                         client->put_message(error);
                         return ;
                     }
                 } else {
-                    error = ":ft_irc 442 " + client->get_nickname() + " " + it->second->get_name() + " MODE :You're not on that channel.";
+                    error = ":ft_irc 442 " + client->get_nickname() + " " + it->second->get_name() + " :You're not on that channel.";
                     client->put_message(error);
                     return ;
                 }
             } else {
-                error = ":ft_irc 501 " + client->get_nickname() + " MODE (" + modestring + ") :Unknown MODE flag.";
+                error = ":ft_irc 501 " + client->get_nickname() + " :Unknown MODE flag.";
                 client->put_message(error);
                 return ;
             }
@@ -616,16 +634,39 @@ void    Mediator::quit_cmd(Client *client)
 
 void    Mediator::time_cmd(Client *client) {
     time_t current_time;
+    std::string curr_time;
+    std::vector<std::string> first_time;
+    std::string date;
+
     time(&current_time);
-    std::string time;
-    time = ctime(&current_time);
-    std::vector<std::string> first_date = split(time, ' ');
-    std::string date = "\x1b[0;31m" + first_date[0] + " " + first_date[2] + " " + "\x1b[0;32m" + first_date[1] + " " + "\x1b[0;33m" + first_date[4] + "\x1b[0m";
+    curr_time = ctime(&current_time);
+    first_time = split(curr_time, ' ');
+    date = RED + first_time[0] + " " + first_time[2] + " " + GREEN + first_time[1] + " " + BLUE + first_time[4] + RESET;
     date.erase(date.size() - 5, date.size() - 1);
-    // client->put_message("")
-    client->put_message(date); 
-    std::string clock = "\x1b[0;31m" + first_date[3] + "\x1b[0m";
-    client->put_message(clock);
+    client->put_message(date);
+    std::string time = YELLOW + first_time[3] + RESET;
+    time = "    " + time;
+    client->put_message(time);
+}
+
+void    Mediator::find_cmd(Client *client) {
+    std::string message;
+    if (client->__cmd.size() != 2) {
+        std::string error = ":ft_irc 461 " + client->get_nickname() + " /FIND :Not enough parameters.";
+        client->put_message(error);
+        return ;
+    }
+    for (std::map<int, Client*>::iterator it = this->__clients.begin(); it != this->__clients.end(); it++) {
+        if (it->second->get_nickname() == client->__cmd[1]) {
+            message = ":ft_irc " + client->__cmd[1] + " /FIND :This nickname is used before.";
+            client->put_message(message);
+            return ;
+        } else {
+            message = ":ft_irc " + client->__cmd[1] + " /FIND :This nickname still free.";
+            client->put_message(message);
+            return ;
+        }
+    }
 }
 
 void    Mediator::command_not_found(Client *client) {
@@ -810,12 +851,15 @@ void Mediator::privmsg_cmd(Client *client) {
         return ;
     }
     std::vector<std::string> targets = split(client->__cmd[1], ',');
-    std::string message_to_be_sent = client->__cmd[2][0] == ':' ? client->__cmd[2].substr(1) : client->__cmd[2]; 
+    std::string message_to_be_sent = "";
+    message_to_be_sent += client->__cmd[2];
+    if (client->__cmd.size() > 3)
+        message_to_be_sent += " ";
     for (unsigned int i = 3; i < client->__cmd.size();++i) {
         message_to_be_sent += client->__cmd[i];
-        message_to_be_sent += " ";
+        if (i < client->__cmd.size() - 1)
+            message_to_be_sent += " ";
     }
-
     for (unsigned int i = 0;i < targets.size();++i) {
         if (targets[i][0] == '#') {
             if (this->__channels.find(targets[i]) == this->__channels.end()) {
@@ -872,18 +916,20 @@ void Mediator::privmsg_cmd(Client *client) {
        }
     }
 }
-
 void Mediator::notice_cmd(Client *client) {
     if (client->__cmd.size() < 3) {
         return ;
     }
     std::vector<std::string> targets = split(client->__cmd[1], ',');
     std::string message_to_be_sent = "";
-    for (unsigned int i = 2; i < client->__cmd.size();++i) {
-        message_to_be_sent += client->__cmd[i];
+    message_to_be_sent += client->__cmd[2][0] == ':' ? client->__cmd[2].substr(1) : client->__cmd[2];
+    if (client->__cmd.size() > 3)
         message_to_be_sent += " ";
+    for (unsigned int i = 3; i < client->__cmd.size();++i) {
+        message_to_be_sent += client->__cmd[i];
+        if (i < client->__cmd.size() - 1)
+            message_to_be_sent += " ";
     }
-
     for (unsigned int i = 0;i < targets.size();++i) {
         if (targets[i][0] == '#') {
             if (this->__channels.find(targets[i]) == this->__channels.end()) {

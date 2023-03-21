@@ -5,6 +5,7 @@
 #include <iostream>
 #include "server.class.hpp"
 #include "mediator.class.hpp"
+#include <sys/socket.h>
 
 class Client {
 	private:
@@ -23,6 +24,7 @@ class Client {
         std::string                     __hostname;
 	public:
 		Client(int fd, std::string &password, Mediator *mediator);
+		Client(int fd, std::string &password, Mediator *mediator, struct sockaddr &addr);
 		bool    		is_connected();
 		bool    		is_accepted(); 
 		bool    		put_message(std::string message);

@@ -7,6 +7,10 @@
 #include <sstream>
 #include <sys/socket.h>
 #include <sys/param.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/types.h>
 
 bool		Client::is_connected(void) { 
     return __connected; }
@@ -42,6 +46,25 @@ Client::Client(int fd, std::string &server_password, Mediator *mediator) : __ser
     }
 }
 
+Client::Client(int fd, std::string &server_password, Mediator *mediator, struct sockaddr &addr) :  __server_password(server_password), __fd(fd), __mediator(mediator) {
+    char ip4[INET_ADDRSTRLEN];
+    struct in_addr ip4_addr;
+    struct hostent *he;
+    this->__connected = false;
+    this->__accepted = false;
+    this->__voice = false;
+    inet_ntop(AF_INET, &((sockaddr_in *)&addr)->sin_addr, ip4, INET_ADDRSTRLEN);
+    if (inet_pton(AF_INET, ip4, &ip4_addr) == -1) {
+        perror("inet_pton");
+    }
+    he = gethostbyaddr(&ip4_addr, sizeof(ip4_addr), AF_INET);
+    if (!he)
+        return ;
+    this->__hostname = std::string(he->h_name);
+    std::cout << "<" << this->__hostname << ">" << std::endl;
+
+}
+
 void    Client::update_client(std::string &str) {
     this->__buffer += str;
     // remove all \r from input
@@ -62,6 +85,10 @@ void    Client::update_client(std::string &str) {
         }
         if (!this->__cmd.empty()) {
             // HOUSSAM : execute the command here
+            std::cout << "<";
+            for (auto &i : this->__cmd)
+                std::cout << i << " ";
+            std::cout << ">\n";
             this->execute(this->__mediator);
             this->__cmd.clear();
         }
@@ -98,7 +125,7 @@ bool    Client::check_connection(void){
     if (this->get_nickname().empty() || this->get_username().empty() || !this->is_accepted())
         return false;
     set_connected(true);
-    put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + " [ !" + __user + "@" + this->get_hostname() + "]");
+    put_message(":ft_irc 001 " + get_nickname() +  " :Welcome to the Internet Relay Network, " + __nick + " [!" + __user + "@" + this->get_hostname() + "]");
     return true;
 }
 
@@ -140,6 +167,8 @@ void   Client::execute(Mediator *mediator){
         mediator->command_bot(this);
     else if (__cmd[0] == "/time" || __cmd[0] == "/TIME")
         mediator->time_cmd(this);
+    else if (__cmd[0] == "/find" || __cmd[0] == "/FIND")
+        mediator->find_cmd(this);
     else if (this->is_connected()) {
         if (__cmd[0] == "JOIN" || __cmd[0] == "join")
             mediator->join_cmd(this);

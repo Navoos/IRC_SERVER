@@ -3,11 +3,13 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cstdio>
-#include <unistd.h>
+#include <sys/socket.h>
+
+#define RED "\x1b[0;31m"
+#define GREEN "\x1b[0;32m"
+#define YELLOW "\x1b[0;33m"
+#define BLUE "\x1b[0;34m"
+#define RESET "\x1b[0m"
 
 #define ERR_ALREADYREGISTERED "462"
 #define ERR_NEEDMOREPARAMS    "461"
@@ -36,10 +38,13 @@ class Mediator {
       void  nick_cmd(Client *client);   // houssam
       void  join_cmd(Client *client);   // houssam
       void  notice_cmd(Client *client);
-      void part_cmd(Client *client);
-      std::map<std::string, Channel*>& get_channels();
-      void  time_cmd(Client *client);
-      void  bot_command(Client *client);
+      // deadpool
+        // std::vector<std::string> split(const std::string& input, const std::string& delimiter);
+        void part_cmd(Client *client);
+        std::map<std::string, Channel*>& get_channels();
+        void time_cmd(Client *client);
+        void find_cmd(Client *client);
+    //   void  part_cmd(Client *client, Channel *channel);   //ayoub
       void  command_not_found(Client *client);
       void  mode_cmd(Client *client);   //ayoub
       void  kick_cmd(Client *client);   //ayoub
@@ -53,6 +58,7 @@ class Mediator {
       bool  find_client(std::string &nick_name);
       void  set_client(int fd, std::string &buffer);
       void  add_client(int fd, std::string &password, std::string &buffer, Mediator *mediator);
+      void  add_client(int fd, std::string &password, Mediator *mediator, struct sockaddr &addr);
       bool  search_channel(std::string name, std::map<std::string, Channel*>     __channels);
       void  notify_clients_of_new_member(Channel *channel, Client *client);
       std::string get_random_joke();
