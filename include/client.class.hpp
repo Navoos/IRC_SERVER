@@ -40,6 +40,7 @@ class Client {
     	void    		subscribe_to_channel(Channel *channel);
     	int				get_socket(void) const;
     	Channel*    	get_channel(std::string &name);
+        std::map<std::string, Channel *> &get_all_channels();
         bool            has_voice();
 		void			erase_channel(std::string &channel);
         std::string     get_hostname();

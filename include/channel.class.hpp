@@ -40,9 +40,11 @@ public:
 	bool					find_client(int client_id);
 	bool					find_client(std::string &nick_name);
 	bool					find_operator(int client);
+    bool                    find_invited(int client);
 	void					delete_client(int client_fd); 
     bool                    is_moderated();
 	void					delete_moderator(int moderator);
+    void                    delete_invited(int invited);
 	std::set<int>			get_moderators();
 	std::map<int, Client*>&	get_all_client();
 	//deadpool

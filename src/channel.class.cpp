@@ -47,6 +47,14 @@ bool Channel::find_operator(int client_id) {
     }
 }
 
+bool Channel::find_invited(int client_id) {
+    if (this->__invited.find(client_id) == this->__invited.end()) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 void Channel::set_name(std::string name){
     __name = name;
 }
@@ -79,6 +87,7 @@ bool Channel::is_invited(int client_id) {
     }
 }
 
+
 std::map<int, Client*>& Channel::get_all_client() {
     return this->__clients;
 }
@@ -92,6 +101,11 @@ void Channel::delete_client(int client_fd) {
 void Channel::delete_moderator(int moderator) {
     if (this->__moderators.find(moderator) != this->__moderators.end())
         this->__moderators.erase(moderator);
+}
+
+void Channel::delete_invited(int invited) {
+    if (this->__invited.find(invited) != this->__invited.end())
+        this->__invited.erase(invited);
 }
 
 std::set<int> Channel::get_moderators() {

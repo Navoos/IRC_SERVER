@@ -8,7 +8,9 @@
 #include <sys/socket.h>
 #include <string>
 
-Mediator::Mediator(Server& server) : __server(server) {}
+Mediator::Mediator(Server& server) : __server(server) {
+    this->__quitter_fd = -1;
+}
 
 static bool valid_name(std::string nickname){
     if (nickname.size() > 9)
@@ -86,7 +88,40 @@ void    Mediator::nick_cmd(Client *client){
 }
 
 void    Mediator::delete_client(int fd) {
+    if (this->__clients.find(fd) == this->__clients.end())
+        return ;
+    Client *client  = this->__clients.at(fd);
+    std::string msg = ":" + (!client->get_nickname().empty() ? client->get_nickname() : "no_nick") + "!" + (!client->get_username().empty() ? client->get_username() : "no_user") + "@" + client->get_hostname() + " QUIT :Quit: " + this->__quitter_reason + "\r\n";
+    for (std::map<std::string, Channel *>::iterator it = client->get_all_channels().begin(); it != client->get_all_channels().end();++it) {
+        for (std::map<int, Client*>::iterator itt = it->second->get_all_client().begin(); itt != it->second->get_all_client().end(); ++itt) {
+            if (send(itt->second->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
+                perror("send");
+            }
+        }
+    }
+    for (std::map<std::string, Channel *>::iterator it = this->__channels.begin(); it != this->__channels.end();++it) {
+        if (it->second->find_client(fd))
+            it->second->delete_client(fd);
+        if (it->second->find_operator(fd))
+            it->second->delete_moderator(fd);
+        if (it->second->find_invited(fd))
+            it->second->delete_invited(fd);
+    }
     this->__clients.erase(fd);
+    delete client;
+}
+
+void    Mediator::set_quit(int fd, std::string reason) {
+    this->__quitter_fd = fd;
+    this->__quitter_reason = reason;
+}
+
+void  Mediator::set_quit_reason(std::string reason) {
+    this->__quitter_reason = reason;
+}
+
+int    Mediator::get_quit() {
+    return this->__quitter_fd;
 }
 
 bool Mediator::find_client(int fd) {
@@ -619,17 +654,29 @@ void    Mediator::mode_cmd(Client *client) {
 // TODO: yaakoub dir shi tawil m3a had lqlawi dial quit
 void    Mediator::quit_cmd(Client *client) 
 {
-    std::string reason;
-
-    if (client->__cmd.size() == 2)
-        for (std::vector<std::string>::iterator it = client->__cmd.begin() + 1; it != client->__cmd.end(); it++)
-            reason += *it + " ";
+    std::string reason = "";
+    //
+    // if (client->__cmd.size() == 2)
+    //     for (std::vector<std::string>::iterator it = client->__cmd.begin() + 1; it != client->__cmd.end(); it++)
+    //         reason += *it + " ";
+    // for (std::map<std::string, Channel*>::iterator it_channel = this->get_channels().begin(); it_channel != this->get_channels().end(); it_channel++) {
+    //     if (it_channel->second->find_client(client->get_socket()))
+    //         it_channel->second->delete_client(client->get_socket());
+    // }
+    // close(client->get_socket());
+    // this->delete_client(client->get_socket());
+    if (client->__cmd.size() >= 2) {
+        for (unsigned int i = 2; i < client->__cmd.size();++i) {
+            reason += client->__cmd[i];
+            if (i < client->__cmd.size() - 1)
+                reason += " ";
+        }
+    }
     for (std::map<std::string, Channel*>::iterator it_channel = this->get_channels().begin(); it_channel != this->get_channels().end(); it_channel++) {
         if (it_channel->second->find_client(client->get_socket()))
             it_channel->second->delete_client(client->get_socket());
     }
-    close(client->get_socket());
-    this->delete_client(client->get_socket());
+    this->set_quit(client->get_socket(), reason);
 }
 
 void    Mediator::command_not_found(Client *client) {

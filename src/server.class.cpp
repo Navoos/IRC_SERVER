@@ -26,6 +26,17 @@ Server&  Server::get_instance(int socket, std::string &password) {
   return instance;
 }
 
+void Server::check_for_quitter(Mediator *mediator, int &fd_count, int index) {
+    if (mediator->get_quit() == -1)
+        return;
+    puts("found one");
+    close(mediator->get_quit());
+    --fd_count;
+    mediator->delete_client(this->__fds[index].fd);
+    this->__fds.erase(this->__fds.begin() + index);
+    mediator->set_quit(-1, "");
+}
+
 void Server::run() {
   // server loop
   struct sockaddr remote_addr;
@@ -66,20 +77,19 @@ void Server::run() {
 		  if (bytes <= 0) {
 			if (bytes == 0) {
 			  std::cout << "server: socket " << this->__fds[i].fd << " hang up" << std::endl;
+              this->__mediator->set_quit(this->__fds[i].fd, "");
 			} else {
 			  perror("recv");
 			}
-			close(this->__fds[i].fd);
-			this->__mediator->delete_client(this->__fds[i].fd);
-			this->__fds.erase(this->__fds.begin() + i);
-			--fd_count;
 		  } else {
 			std::string s_buffer(buf);
             this->__mediator->set_client(this->__fds[i].fd, s_buffer);
 		  }
 		}
 	  }
+      check_for_quitter(this->__mediator, fd_count, i);
 	}
+    // TODO: delete client when necessary
   }
 }
 

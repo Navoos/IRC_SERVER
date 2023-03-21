@@ -30,6 +30,11 @@ void		Client::set_nickname(std::string nickname) {
 void		Client::set_username(std::string username) { 
     __user = username; }
 
+std::map<std::string, Channel *> &Client::get_all_channels() {
+    return this->__channels;
+}
+
+
 std::string	Client::get_nickname(void) const { return __nick; }
 std::string	Client::get_username(void) const { return __user; }
 int			Client::get_socket(void) const { return __fd; }
@@ -96,6 +101,10 @@ void    Client::update_client(std::string &str) {
         if (!this->__cmd.empty()) {
             // HOUSSAM : execute the command here
             this->execute(this->__mediator);
+            // for (auto &i : this->__cmd) {
+            //     std::cout << i << " ";
+            // }
+            // std::cout << std::endl;
             this->__cmd.clear();
         }
         this->__buffer.erase(0, pos + 1);

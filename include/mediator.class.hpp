@@ -41,6 +41,7 @@ class Mediator {
       void  mode_cmd(Client *client);   //ayoub
       void  kick_cmd(Client *client);   //ayoub
       void  quit_cmd(Client *client);   //ayoub
+      void  set_quit_reason(std::string reason);
       void  topic_cmd(Client *client);
       void  invite_cmd(Client *client);
       void  privmsg_cmd(Client *client);
@@ -53,8 +54,10 @@ class Mediator {
       void  add_client(int fd, std::string &password, Mediator *mediator, struct sockaddr &addr);
       bool  search_channel(std::string name, std::map<std::string, Channel*>     __channels);
       void  notify_clients_of_new_member(Channel *channel, Client *client);
+      void  set_quit(int fd, std::string reason);
       std::string get_random_joke();
       void command_bot(Client *client);
+      int   get_quit();
       // todo: add invit command
       // todo: add topic command
       // HOUSSAM: add additional commands here
@@ -63,5 +66,7 @@ class Mediator {
       std::map<int, Client*>            __clients;
       std::map<std::string, Channel*>   __channels;
       Server                            __server;
+      int                               __quitter_fd;
+      std::string                       __quitter_reason;
 };
 #endif
