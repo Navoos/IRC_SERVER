@@ -76,6 +76,7 @@ Client::Client(int fd, std::string &server_password, Mediator *mediator, struct 
     } else {
         this->__hostname = std::string(he->h_name);
     }
+    // this->__hostname = std::string(he->h_name);
     // std::cout << "<" << this->__hostname << ">" << std::endl;
 
 }
@@ -100,6 +101,10 @@ void    Client::update_client(std::string &str) {
         }
         if (!this->__cmd.empty()) {
             // HOUSSAM : execute the command here
+            // std::cout << "<";
+            // for (auto &i : this->__cmd)
+            //     std::cout << i << " ";
+            // std::cout << ">\n";
             this->execute(this->__mediator);
             // for (auto &i : this->__cmd) {
             //     std::cout << i << " ";
@@ -178,6 +183,14 @@ void   Client::execute(Mediator *mediator){
         mediator->user_cmd(this);
     else if (__cmd[0] == "NICK" || __cmd[0] == "nick")
         mediator->nick_cmd(this);
+    else if (__cmd[0] == "/joke" || __cmd[0] == "/JOKE")
+        mediator->command_bot(this);
+    else if (__cmd[0] == "/time" || __cmd[0] == "/TIME")
+        mediator->time_cmd(this);
+    else if (__cmd[0] == "/find" || __cmd[0] == "/FIND")
+        mediator->find_cmd(this);
+    else if (__cmd[0] == "/commands" || __cmd[0] == "/COMMANDS")
+        mediator->commands(this);
     else if (this->is_connected()) {
         if (__cmd[0] == "JOIN" || __cmd[0] == "join")
             mediator->join_cmd(this);
@@ -194,17 +207,12 @@ void   Client::execute(Mediator *mediator){
             mediator->invite_cmd(this);
         else if (__cmd[0] == "privmsg" || __cmd[0] == "PRIVMSG")
             mediator->privmsg_cmd(this);
-        // //deadpool
-        // if (__cmd[0] == "PART" || __cmd[0] == "part")
-        //     mediator->part_cmd(this, __cmd);
         else if (__cmd[0] == "MODE" || __cmd[0] == "mode")
             mediator->mode_cmd(this);
         else if (__cmd[0] == "QUIT" || __cmd[0] == "quit")
             mediator->quit_cmd(this);
         else if (__cmd[0] == "NOTICE" || __cmd[0] == "notice")
             mediator->notice_cmd(this);
-        else if (__cmd[0] == "joke" || __cmd[0] == "JOKE")
-            mediator->command_bot(this);
         else 
             mediator->command_not_found(this);
     } else {

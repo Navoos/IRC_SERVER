@@ -4,10 +4,11 @@
 
 int main(int ac, char **av) {
     // TODO:: add port option
-    if (ac == 2) {
-        Socket socket("4040");
-        std::string password = std::string(av[1]);
-        Server server = Server::get_instance(socket.get_socket(), password); 
+    if (ac == 3) {
+        std::string port = std::string(av[1]);
+        Socket socket(port);
+        std::string password = std::string(av[2]);
+        Server server = Server::get_instance(socket.get_socket(), password, port);
         server.run();
     } else {
         std::cout << "USAGE: ./bin/ircserv PORT PASSWORD\n";

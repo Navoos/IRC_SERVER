@@ -5,6 +5,13 @@
 #include <string>
 #include <sys/socket.h>
 
+#define GREY "\x1b[0;30m"
+#define RED "\x1b[0;31m"
+#define GREEN "\x1b[0;32m"
+#define YELLOW "\x1b[0;33m"
+#define BLUE "\x1b[0;34m"
+#define RESET "\x1b[0m"
+
 #define ERR_ALREADYREGISTERED "462"
 #define ERR_NEEDMOREPARAMS    "461"
 #define ERR_PASSWDMISMATCH    "464"
@@ -69,4 +76,5 @@ class Mediator {
       int                               __quitter_fd;
       std::string                       __quitter_reason;
 };
+
 #endif
