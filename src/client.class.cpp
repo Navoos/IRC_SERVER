@@ -131,9 +131,7 @@ bool  Client::put_message(std::string message)
     // if (get_nickname().size() == 0)
     //     msg << ":ft_irc " << code << " " <<  "*" << " " << message << "\r\n";
     // else
-        msg << message << "\r\n";
-        
-
+    msg << message + std::string(RESET) << "\r\n";
     if (send(get_socket(), msg.str().c_str(), msg.str().length(), 0) == -1) {
         perror("send:");
         return (false);
