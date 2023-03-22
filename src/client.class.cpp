@@ -61,7 +61,7 @@ Client::Client(int fd, std::string &server_password, Mediator *mediator, struct 
     if (!he)
         return ;
     this->__hostname = std::string(he->h_name);
-    std::cout << "<" << this->__hostname << ">" << std::endl;
+    // std::cout << "<" << this->__hostname << ">" << std::endl;
 
 }
 
@@ -85,10 +85,10 @@ void    Client::update_client(std::string &str) {
         }
         if (!this->__cmd.empty()) {
             // HOUSSAM : execute the command here
-            std::cout << "<";
-            for (auto &i : this->__cmd)
-                std::cout << i << " ";
-            std::cout << ">\n";
+            // std::cout << "<";
+            // for (auto &i : this->__cmd)
+            //     std::cout << i << " ";
+            // std::cout << ">\n";
             this->execute(this->__mediator);
             this->__cmd.clear();
         }
@@ -169,6 +169,8 @@ void   Client::execute(Mediator *mediator){
         mediator->time_cmd(this);
     else if (__cmd[0] == "/find" || __cmd[0] == "/FIND")
         mediator->find_cmd(this);
+    else if (__cmd[0] == "/commands" || __cmd[0] == "/COMMANDS")
+        mediator->commands(this);
     else if (this->is_connected()) {
         if (__cmd[0] == "JOIN" || __cmd[0] == "join")
             mediator->join_cmd(this);

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <map>
 
-Server::Server(int &socket, std::string &password) : __socket(socket), __password(password) {
+Server::Server(int &socket, std::string &password, std::string &port) : __socket(socket), __password(password), __port(port) {
     this->__mediator = new Mediator(*this);
     fcntl(this->__socket, F_SETFL, O_NONBLOCK);
     if (listen(this->__socket, BACKLOG) == -1)
@@ -21,8 +21,8 @@ Server::~Server() {
 }
 
 
-Server&  Server::get_instance(int socket, std::string &password) {
-  static Server instance(socket, password);
+Server&  Server::get_instance(int socket, std::string &password, std::string &port) {
+  static Server instance(socket, password, port);
   return instance;
 }
 

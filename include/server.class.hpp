@@ -17,15 +17,16 @@ class Server {
 	std::vector<pollfd>     __fds;
 	int                     __socket;
     std::string			    __password;
+    std::string         __port;
     Mediator                *__mediator;
 
   private:
-	Server(int &socket, std::string &password);
+	Server(int &socket, std::string &password, std::string &port);
   public:
     Server();
     ~Server();
 	void    run();
-	static Server& get_instance(int socket, std::string &password);
+	static Server& get_instance(int socket, std::string &password, std::string &port);
     std::string	   get_password(void) const;
 };
 #endif
