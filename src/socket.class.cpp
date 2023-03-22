@@ -39,7 +39,6 @@ Socket::Socket(const std::string port, const std::string address) : __port(port)
     this->__socket = socket(i->ai_family, i->ai_socktype, i->ai_protocol);
     if (this->__socket < 0)
       continue;
-    // for the already in use message
     setsockopt(this->__socket, SOL_SOCKET, SO_REUSEADDR, &reusable, sizeof reusable);
     if (bind(this->__socket, i->ai_addr, i->ai_addrlen) < 0) {
       perror("bind");

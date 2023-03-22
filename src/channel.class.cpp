@@ -122,8 +122,6 @@ bool Channel::find_client(std::string &nick_name) {
     return false;
 }
 
-//deadpool
-
 int Channel::get_client(std::string nick_name) {
     for (std::map<int, Client*>::iterator it = this->__clients.begin(); it != this->__clients.end(); ++it) {
         if (it->second->get_nickname() == nick_name) {

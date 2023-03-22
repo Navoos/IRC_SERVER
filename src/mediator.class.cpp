@@ -317,11 +317,11 @@ void Mediator::part_cmd(Client *client) {
                         return ;
                     for (std::map<int, Client*>::iterator it1 = channel->get_all_client().begin(); it1 != channel->get_all_client().end(); ++it1){
                         if (reason.size() == 0) { 
-                            message = ":ft_irc " + it1->second->get_nickname() + " :" + client->get_nickname() + " is leaving the channel " + __channels[i] + ".";
+                            message = ":" + client->get_nickname() + " PART " + __channels[i];
                             it1->second->put_message(message);
                             continue ;
                         } else {
-                            message = ":ft_irc " + it1->second->get_nickname() + " :" + client->get_nickname() + " is leaving the channel " + __channels[i] + " because \"" + reason + "\".";
+                            message = ":" + client->get_nickname() + " PART " + __channels[i] + " " + reason;
                             it1->second->put_message(message);
                             continue ;
                         }
@@ -333,7 +333,7 @@ void Mediator::part_cmd(Client *client) {
                         for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); ++it_client) {
                             if (channel->get_all_client().size() > 0 && channel->get_moderators().size() == 0) {
                                 channel->add_moderator(it_client->second->get_socket());
-                                message = ":ft_irc :" + it_client->second->get_nickname() + " now is the operator of channel " + __channels[i] + ".";
+                                message = ":" + channel->get_name() + " MODE " + channel->get_name() + " +o " + it_client->second->get_nickname();
                                 it_client->second->put_message(message);
                             }
                         }
@@ -413,14 +413,18 @@ void Mediator::kick_cmd(Client *client) {
                                         it->second->put_message(message);
                                     }
                                     __client->erase_channel(*it);
-                                    this->__channels.at(*it)->delete_client(channel->get_client(*it_clients));
+                                    this->__channels.at(*it)->delete_client(__client->get_socket());
+                                    this->__channels.at(*it)->delete_moderator(__client->get_socket());
+                                    this->__channels.at(*it)->delete_invited(__client->get_socket());
                                     if (channel->find_operator(client->get_socket())) {
-                                        if (*it_clients == client->get_nickname())
+                                        if (*it_clients == client->get_nickname()) {
                                             channel->delete_moderator(client->get_socket());
+                                            channel->delete_client(client->get_socket());
+                                        }
                                         for (std::map<int, Client*>::iterator it_client = channel->get_all_client().begin(); it_client != channel->get_all_client().end(); ++it_client) {
                                             if (channel->get_all_client().size() > 0 && channel->get_moderators().size() == 0) {
                                                 channel->add_moderator(it_client->second->get_socket());
-                                                message = ":ft_irc " + it_client->second->get_nickname() + " is the new operator of channel " + __channels[i] + ".";
+                                                message = ":" + channel->get_name() + " MODE " + channel->get_name() + " +o " + it_client->second->get_nickname();
                                                 it_client->second->put_message(message);
                                             }
                                         }
@@ -609,6 +613,7 @@ void    Mediator::quit_cmd(Client *client)
 {
     std::string reason = "";
     if (client->__cmd.size() >= 2) {
+        reason += client->__cmd[1][0] == ':' ? client->__cmd[1].substr(1) : client->__cmd[1];
         for (unsigned int i = 2; i < client->__cmd.size();++i) {
             reason += client->__cmd[i];
             if (i < client->__cmd.size() - 1)
@@ -756,7 +761,6 @@ void    Mediator::topic_cmd(Client *client){
         }
     }
 }
-// @id=234AB :dan!d@localhost PRIVMSG #chan :Hey what's up!
 
 Client* Mediator::get_client(std::string &nick_name) {
     std::map<int, Client *>::iterator it;
@@ -777,7 +781,6 @@ bool Mediator::find_client(std::string &nick_name) {
     }
     return false;
 }
-// client->put_message(":ft_irc 461 " + client->get_nickname() +" :Not enough parameters");
 
 void Mediator::invite_cmd(Client *client) {
     if (client->__cmd.size() < 3) {
@@ -880,40 +883,35 @@ void Mediator::privmsg_cmd(Client *client) {
     for (unsigned int i = 0;i < targets.size();++i) {
         if (targets[i][0] == '#') {
             if (this->__channels.find(targets[i]) == this->__channels.end()) {
-                std::string msg = ":ft_irc 403 " + client->get_nickname() + " " + client->__cmd[1] + " :No such channel";
+                std::string msg = ":ft_irc 403 " + client->get_nickname() + " " + targets[i] + " :No such channel";
                 client->put_message(msg);
-                continue ;
             } else {
-                // if channel is moderated the only who has the voice command and operator can send messages
                 Channel *channel = this->__channels.at(targets[i]);
                 if (!channel)
                     continue;
+                if (!channel->find_client(client->get_socket())) {
+                    client->put_message(":ft_irc 404 " + client->get_nickname() + " " + channel->get_name() + " :Cannot send to channel");
+                    continue;
+                }
                 if (!channel->is_moderated()) {
-                    // send normally
                     std::string msg = ":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " PRIVMSG " + channel->get_name() + " " + message_to_be_sent + "\r\n";
                     for (std::map<int, Client *>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end();++it) {
                         if (send(it->first, msg.c_str(), msg.length(), 0) == -1)
                         {
                             perror("send");
-                            continue;
                         }
                     }
-                    continue;
                 }
-                if (channel->is_moderated() && (channel->find_operator(client->get_socket()) || client->has_voice())) {
-                    // send message to all clients currently connected
+                else if (channel->is_moderated() && (channel->find_operator(client->get_socket()) || client->has_voice())) {
                     for (std::map<int, Client *>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end();++it) {
                         if (send(it->first, client->__cmd[2].c_str(), client->__cmd[2].length(), 0) == -1)
                         {
                             perror("send");
-                            continue;
                         }
                     }
-                    continue;
                 } else {
                     std::string msg = ":ft_irc 404 " + client->get_nickname() + " " + targets[i] + " :Cannot send to channel";
                     client->put_message(msg);
-                    continue ;
                 }
             }
        } else {
@@ -922,13 +920,10 @@ void Mediator::privmsg_cmd(Client *client) {
                 std::string msg = ":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " PRIVMSG " + send_client->get_nickname() + " " + message_to_be_sent + "\r\n";
                 if (send(send_client->get_socket(), msg.c_str(), msg.length(), 0) == -1) {
                     perror("send");
-                    continue;
                 }
-                continue;
            } else {
                 std::string msg = ":ft_irc 401 " + client->get_nickname() + " " + targets[i] + " :No such nick";
                 client->put_message(msg);
-                continue ;
            }
        }
     }
@@ -952,12 +947,14 @@ void Mediator::notice_cmd(Client *client) {
             if (this->__channels.find(targets[i]) == this->__channels.end()) {
                 continue ;
             } else {
-                // if channel is moderated the only who has the voice command and operator can send messages
                 Channel *channel = this->__channels.at(targets[i]);
                 if (!channel)
                     continue;
+                if (!channel->find_client(client->get_socket())) {
+                    client->put_message(":ft_irc 404 " + client->get_nickname() + " " + channel->get_name() + " :Cannot send to channel");
+                    continue;
+                }
                 if (!channel->is_moderated()) {
-                    // send normally
                     std::string msg = ":" + client->get_nickname() + "!" + client->get_username() + "@" + client->get_hostname() + " NOTICE " + channel->get_name() + " " + message_to_be_sent + "\r\n";
                     for (std::map<int, Client *>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end();++it) {
                         if (send(it->first, msg.c_str(), msg.length(), 0) == -1)
@@ -969,7 +966,6 @@ void Mediator::notice_cmd(Client *client) {
                     continue;
                 }
                 if (channel->is_moderated() && (channel->find_operator(client->get_socket()) || client->has_voice())) {
-                    // send message to all clients currently connected
                     for (std::map<int, Client *>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end();++it) {
                         if (send(it->first, client->__cmd[2].c_str(), client->__cmd[2].length(), 0) == -1)
                         {

@@ -3,7 +3,6 @@
 #include "server.class.hpp"
 
 int main(int ac, char **av) {
-    // TODO:: add port option
     if (ac == 3) {
         std::string port = std::string(av[1]);
         Socket socket(port);

@@ -37,7 +37,6 @@ void Server::check_for_quitter(Mediator *mediator, int &fd_count, int index) {
 }
 
 void Server::run() {
-  // server loop
   struct sockaddr remote_addr;
   socklen_t addrlen = sizeof remote_addr;
   int fd_count = 1;
@@ -53,10 +52,8 @@ void Server::run() {
 	}
 	for (int i = 0;i < fd_count;++i) {
 	  if (this->__fds[i].revents & POLLIN) {
-		// for the server
 		if (this->__fds[i].fd == this->__socket)
 		{
-          // TODO: when creating a new client use their hostname
           addrlen = sizeof remote_addr;
 		  client_fd = accept(this->__socket, &remote_addr, &addrlen);
 		  if (client_fd < 0) {
@@ -88,7 +85,6 @@ void Server::run() {
 	  }
       check_for_quitter(this->__mediator, fd_count, i);
 	}
-    // TODO: delete client when necessary
   }
 }
 
