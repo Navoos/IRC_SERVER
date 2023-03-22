@@ -51,6 +51,9 @@ class Mediator {
       void  set_quit_reason(std::string reason);
       void  topic_cmd(Client *client);
       void  invite_cmd(Client *client);
+      void  time_cmd(Client *client);
+      void  find_cmd(Client *client);
+      void  commands(Client *client);
       void  privmsg_cmd(Client *client);
       void  delete_client(int fd);
       Client*   get_client(std::string &nick_name);

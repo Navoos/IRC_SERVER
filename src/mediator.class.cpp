@@ -373,8 +373,12 @@ void Mediator::kick_cmd(Client *client) {
             client->put_message(RED + error + RESET);
             return ;
         }
-        for(std::vector<std::string>::iterator it_comment = client->__cmd.begin() + 3; it_comment != client->__cmd.end(); ++it_comment)
-            comment += *it_comment + " ";
+        for (unsigned int i = 3; i < client->__cmd.size(); ++i) {
+            comment += client->__cmd[i];
+            if (i < client->__cmd.size() - 1)
+                comment += " ";
+
+        }
         for (std::vector<std::string>::iterator it = __channels.begin(); it != __channels.end(); ++it, ++i) {
             Channel *channel = client->get_channel(*it);
             if (__channels[i][0] != '#') {
@@ -402,11 +406,11 @@ void Mediator::kick_cmd(Client *client) {
                                         return;
                                     for (std::map<int, Client*>::iterator it = channel->get_all_client().begin(); it != channel->get_all_client().end(); ++it) {
                                         if (comment.size() == 0) {
-                                            message = ":ft_irc " + client->get_nickname() + " :kick " + *it_clients + " from " + __channels[i] + ".";
+                                            message = ":" + client->get_nickname() + " KICK " + __channels[i] + " " + *it_clients;
                                         } else {
-                                            message = ":ft_irc " + client->get_nickname() + " :kick " + *it_clients + " from " + __channels[i] + " using \"" + comment + "\" as the reason.";
+                                            message = ":" + client->get_nickname() + " KICK " + __channels[i] + " " + *it_clients + " " + comment;
                                         }
-                                        it->second->put_message(GREEN + message + RESET);
+                                        it->second->put_message(message);
                                     }
                                     __client->erase_channel(*it);
                                     this->__channels.at(*it)->delete_client(channel->get_client(*it_clients));
@@ -710,18 +714,18 @@ void    Mediator::find_cmd(Client *client) {
 }
 
 void    Mediator::commands(Client *client) {
-    client->put_message("\x1b[0;30mPASS : The password of server\x1b[0m");
-    client->put_message("\x1b[0;30mUSER : The username of client that you want\x1b[0m");
-    client->put_message("\x1b[0;30mNICK : The nickname of client that you want\x1b[0m");
-    client->put_message("\x1b[0;30mJOIN : For join a client to a channel\x1b[0m");
-    client->put_message("\x1b[0;30mTOPIC : Set a title to a channel\x1b[0m");
-    client->put_message("\x1b[0;30mPART : If a client need to leave a channel he can use this command\x1b[0m");
-    client->put_message("\x1b[0;30mKICK : For kick a client from a channel\x1b[0m");
-    client->put_message("\x1b[0;30mINVITE : To invite a client to a channel\x1b[0m");
-    client->put_message("\x1b[0;30mPRIVMSG : To sent a private messge to another client\x1b[0m");
-    client->put_message("\x1b[0;30mMODE : To set option to a channel or user\x1b[0m");
-    client->put_message("\x1b[0;30mQUIT : If a client need to leave the server he can use this command\x1b[0m");
-    client->put_message("\x1b[0;30mNOTICE : To sent a private messsage but without errors\x1b[0m");
+    client->put_message("\x1b[0;32mPASS : The password of server\x1b[0m");
+    client->put_message("\x1b[0;32mUSER : The username of client that you want\x1b[0m");
+    client->put_message("\x1b[0;32mNICK : The nickname of client that you want\x1b[0m");
+    client->put_message("\x1b[0;32mJOIN : For join a client to a channel\x1b[0m");
+    client->put_message("\x1b[0;32mTOPIC : Set a title to a channel\x1b[0m");
+    client->put_message("\x1b[0;32mPART : If a client need to leave a channel he can use this command\x1b[0m");
+    client->put_message("\x1b[0;32mKICK : For kick a client from a channel\x1b[0m");
+    client->put_message("\x1b[0;32mINVITE : To invite a client to a channel\x1b[0m");
+    client->put_message("\x1b[0;32mPRIVMSG : To sent a private messge to another client\x1b[0m");
+    client->put_message("\x1b[0;32mMODE : To set option to a channel or user\x1b[0m");
+    client->put_message("\x1b[0;32mQUIT : If a client need to leave the server he can use this command\x1b[0m");
+    client->put_message("\x1b[0;32mNOTICE : To sent a private messsage but without errors\x1b[0m");
     client->put_message("\x1b[0;32m           _           _   \x1b[0m");
     client->put_message("\x1b[0;32m          | |         | |  \x1b[0m");
     client->put_message("\x1b[0;32m _ __ ___ | |__   ___ | |_ \x1b[0m");
