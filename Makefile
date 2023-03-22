@@ -1,4 +1,3 @@
-# TODO: if we want to push remove the debug rule
 NAME = bin/ircserv
 CC = g++
 CFLAGS = -Wall -Wextra -Iinclude -std=c++98
@@ -10,8 +9,6 @@ INCLUDE = $(addprefix include/, $(INC))
 OBJS = $(addprefix obj/, $(SRC:.cpp=.o))
 
 all : $(NAME)
-
-debug : fclean $(NAME)
 
 obj/%.o : src/%.cpp $(INCLUDE)
 	$(CC) $(CFLAGS) -c $< -o $@
