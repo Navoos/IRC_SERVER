@@ -5,7 +5,6 @@
 #include <string>
 #include <sys/socket.h>
 
-#define GREY "\x1b[0;30m"
 #define RED "\x1b[0;31m"
 #define GREEN "\x1b[0;32m"
 #define YELLOW "\x1b[0;33m"
@@ -34,17 +33,17 @@ class Server;
 class Mediator {
   public:
       Server get_server();
-      void pass_cmd(Client *client, Server server);   // houssam
-      void  user_cmd(Client *client);   // houssam
-      void  nick_cmd(Client *client);   // houssam
-      void  join_cmd(Client *client);   // houssam
+      void pass_cmd(Client *client, Server server);
+      void  user_cmd(Client *client);
+      void  nick_cmd(Client *client);
+      void  join_cmd(Client *client);
       void  notice_cmd(Client *client);
       void part_cmd(Client *client);
       std::map<std::string, Channel*>& get_channels();
       void  command_not_found(Client *client);
-      void  mode_cmd(Client *client);   //ayoub
-      void  kick_cmd(Client *client);   //ayoub
-      void  quit_cmd(Client *client);   //ayoub
+      void  mode_cmd(Client *client);
+      void  kick_cmd(Client *client);
+      void  quit_cmd(Client *client);
       void  set_quit_reason(std::string reason);
       void  topic_cmd(Client *client);
       void  invite_cmd(Client *client);
