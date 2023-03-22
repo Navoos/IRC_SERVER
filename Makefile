@@ -12,7 +12,7 @@ ifeq ($(MAKECMDGOALS), debug)
 	CFLAGS += -g3 -fsanitize=address,integer,undefined
 	LFLAGS += -fsanitize=address,integer,undefined
 else
-	CFLAGS += -O2
+	CFLAGS = -Iinclude
 endif
 
 all : $(NAME)

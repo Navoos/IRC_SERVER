@@ -29,7 +29,6 @@ Server&  Server::get_instance(int socket, std::string &password) {
 void Server::check_for_quitter(Mediator *mediator, int &fd_count, int index) {
     if (mediator->get_quit() == -1)
         return;
-    puts("found one");
     close(mediator->get_quit());
     --fd_count;
     mediator->delete_client(this->__fds[index].fd);
@@ -77,10 +76,10 @@ void Server::run() {
 		  if (bytes <= 0) {
 			if (bytes == 0) {
 			  std::cout << "server: socket " << this->__fds[i].fd << " hang up" << std::endl;
-              this->__mediator->set_quit(this->__fds[i].fd, "");
 			} else {
 			  perror("recv");
 			}
+            this->__mediator->set_quit(this->__fds[i].fd, "");
 		  } else {
 			std::string s_buffer(buf);
             this->__mediator->set_client(this->__fds[i].fd, s_buffer);

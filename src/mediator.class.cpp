@@ -71,13 +71,13 @@ void    Mediator::nick_cmd(Client *client){
     }
 
     if (!valid_name(client->__cmd[1])){
-        client->put_message(":ft_irc 432 " + client->get_nickname() +" :Erroneus nickname");
+        client->put_message(":ft_irc 432 " + client->get_nickname() + " " + client->__cmd[1] +" :Erroneus nickname");
         return;
     } else {
         
         for (std::map<int,Client *>::iterator it = this->__clients.begin(); it != this->__clients.end(); ++it) {
             if (it->second->get_nickname() == client->__cmd[1]) {
-                client->put_message(":ft_irc 433 " + client->get_nickname() +" :Nickname is already in use");
+                client->put_message(":ft_irc 433 " + client->get_nickname() + " " + client->__cmd[1] + " :Nickname is already in use");
                 return;
             }
         }
@@ -233,7 +233,7 @@ void Mediator::join_cmd(Client *client){
                 client->put_message(":ft_irc 480 " + client->get_nickname() +" :is already on channel");
                 return ;
             }
-            if (channel && channel->get_mode()) {
+            if (channel && channel->get_modeinvite()) {
                 if (channel->is_invited(client->get_socket())) {
                     if (!keys.empty() && j < (int)keys.size()) {
                         if (keys[j] == channel->get_key()) {
@@ -856,7 +856,7 @@ void Mediator::invite_cmd(Client *client) {
 
 void Mediator::privmsg_cmd(Client *client) {
     if (client->__cmd.size() < 3) {
-        std::string msg = ":ft_irc 461 " + client->get_nickname() + " :Not enough parameters";
+        std::string msg = ":ft_irc 461 " + client->get_nickname() + " PRIVMSG " + " :Not enough parameters";
         client->put_message(msg);
         return ;
     }
